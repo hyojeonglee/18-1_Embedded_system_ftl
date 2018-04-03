@@ -12,7 +12,7 @@
  * TODO add include
  * #include "blueftl_mapping_page.h"
  */
-#include "ftl_char.h"
+#include "blueftl_char.h"
 
 
 struct ftl_base_t _ftl_base;
@@ -28,12 +28,14 @@ int32_t blueftl_user_ftl_create (struct ssd_params_t* ptr_ssd_params)
 	}
 
 	/* map the block mapping functions to _ftl_base */
-	_ftl_base = ftl_base_block_mapping;
+	_ftl_base = ftl_base_block_mapping; /* TODO remove it! */
 
 	/*
 	 * TODO block to page mapping 
 	 * _ftl_base = ftl_base_page_mapping;
 	 * 
+	 * TODO add gc file?
+	 *
 	 */
 
 	/* initialize the user-level FTL */

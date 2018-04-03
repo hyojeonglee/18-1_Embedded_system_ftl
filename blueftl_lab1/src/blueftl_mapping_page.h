@@ -1,23 +1,24 @@
 #ifndef _BLUESSD_FTL_PAGE
 #define _BLUESSD_FTL_PAGE
 
-#define BLOCK_TABLE_FREE		-1
+#define PAGE_TABLE_FREE		-1
 
-extern struct ftl_base_t ftl_base_block_mapping;
+extern struct ftl_base_t ftl_base_page_mapping;
 
-struct ftl_block_mapping_context_t {
-	uint32_t nr_blk_table_entries;	/* the number of blocks that belong to the block mapping table */
-	uint32_t* ptr_blk_table; /* for the block mapping */
+struct ftl_page_mapping_context_t {
+	uint32_t nr_pg_table_entries;	/* the number of pages that belong to the page mapping table */
+	/* TODO needs nr_blk_table_entries? */
+	uint32_t* ptr_pg_table; /* for the page mapping */
 };
 
-/* create the block mapping table */
-struct ftl_context_t* block_mapping_create_ftl_context (struct virtual_device_t* ptr_vdevice);
+/* create the page mapping table */
+struct ftl_context_t* page_mapping_create_ftl_context (struct virtual_device_t* ptr_vdevice);
 
-/* destroy the block mapping table */
-void block_mapping_destroy_ftl_context (struct ftl_context_t* ptr_ftl_context);
+/* destroy the page mapping table */
+void page_mapping_destroy_ftl_context (struct ftl_context_t* ptr_ftl_context);
 
 /* get a physical page number that was mapped to a logical page number before */
-int32_t block_mapping_get_mapped_physical_page_address (
+int32_t page_mapping_get_mapped_physical_page_address (
 	struct ftl_context_t* ptr_ftl_context, 
 	uint32_t logical_page_address, 
 	uint32_t *ptr_bus,
@@ -26,7 +27,7 @@ int32_t block_mapping_get_mapped_physical_page_address (
 	uint32_t *ptr_page);
 
 /* get a free physical page address */
-int32_t block_mapping_get_free_physical_page_address (
+int32_t page_mapping_get_free_physical_page_address (
 	struct ftl_context_t* ptr_ftl_context, 
 	uint32_t logical_page_address,
 	uint32_t *ptr_bus,
@@ -35,7 +36,7 @@ int32_t block_mapping_get_free_physical_page_address (
 	uint32_t *ptr_page);
 
 /* map a logical page address to a physical page address */
-int32_t block_mapping_map_logical_to_physical (
+int32_t page_mapping_map_logical_to_physical (
 	struct ftl_context_t* ptr_ftl_context, 
 	uint32_t logical_page_address, 
 	uint32_t bus,

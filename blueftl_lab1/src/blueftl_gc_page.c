@@ -21,7 +21,7 @@
 #endif
 
 /* TODO
- * implement gc_page_trigger_gc_lab method
+ * implement gc_page_trigger_gc_lab method using gc_block_trigger_merge
  */
 
 int32_t gc_page_trigger_gc_lab ()

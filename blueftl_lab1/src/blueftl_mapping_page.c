@@ -35,55 +35,57 @@ struct ftl_base_t ftl_base_page_mapping = {
 	.ftl_trigger_wear_leveler = NULL,
 };
 
-/* create the block mapping table */
-struct ftl_context_t* block_mapping_create_ftl_context (
+/* create the page mapping table */
+struct ftl_context_t* page_mapping_create_ftl_context (
 	struct virtual_device_t* ptr_vdevice)
 {
-	uint32_t init_blk_loop = 0;
+	uint32_t init_pg_loop = 0;
 
 	struct ftl_context_t* ptr_ftl_context = NULL;
-	struct flash_ssd_t* ptr_ssd = NULL;
-	struct ftl_block_mapping_context_t* ptr_blk_mapping = NULL;
+	struct flash_ssd_t* ptr_ssd = NULL; /* TODO usage? */
+	struct ftl_page_mapping_context_t* ptr_pg_mapping = NULL;
 
 	/* create the ftl context */
 	/*if ((ptr_ftl_context = (struct ftl_context_t*)kmalloc (sizeof (struct ftl_context_t), GFP_ATOMIC)) == NULL) {*/
 	if ((ptr_ftl_context = (struct ftl_context_t*)malloc (sizeof (struct ftl_context_t))) == NULL) {
-		printf ("blueftl_mapping_block: the creation of the ftl context failed\n");
+		printf ("blueftl_mapping_page: the creation of the ftl context failed\n");
 		goto error_alloc_ftl_context;
 	}
 
 	/* create the ssd context */
 	if ((ptr_ftl_context->ptr_ssd = ssdmgmt_create_ssd (ptr_vdevice)) == NULL) {
-		printf ("blueftl_mapping_block: the creation of the ftl context failed\n");
+		printf ("blueftl_mapping_page: the creation of the ftl context failed\n");
 		goto error_create_ssd_context;
 	}
 
-	/* create the block mapping context */
+	/* create the page mapping context */
 	/*if ((ptr_ftl_context->ptr_mapping = (struct ftl_block_mapping_context_t *)kmalloc (sizeof (struct ftl_block_mapping_context_t), GFP_ATOMIC)) == NULL) {*/
-	if ((ptr_ftl_context->ptr_mapping = (struct ftl_block_mapping_context_t *)malloc (sizeof (struct ftl_block_mapping_context_t))) == NULL) {
-		printf ("blueftl_mapping_block: the creation of the ftl context failed\n");
-		goto error_alloc_ftl_block_mapping_context;
+	if ((ptr_ftl_context->ptr_mapping = (struct ftl_page_mapping_context_t *)malloc (sizeof (struct ftl_page_mapping_context_t))) == NULL) {
+		printf ("blueftl_mapping_page: the creation of the ftl context failed\n");
+		goto error_alloc_ftl_page_mapping_context;
 	}
 
 	/* set virtual device */
 	ptr_ftl_context->ptr_vdevice = ptr_vdevice;
 
 	ptr_ssd = ptr_ftl_context->ptr_ssd;
-	ptr_blk_mapping = (struct ftl_block_mapping_context_t *)ptr_ftl_context->ptr_mapping;
+	ptr_pg_mapping = (struct ftl_page_mapping_context_t *)ptr_ftl_context->ptr_mapping;
 
-	/* TODO: implement block-level FTL */
+	/* TODO: implement block-level > page-level FTL */
 
-	ptr_blk_mapping->nr_blk_table_entries = 
+	/* TODO is this right? */
+	ptr_pg_mapping->nr_pg_table_entries = 
 		ptr_ssd->nr_buses * ptr_ssd->nr_chips_per_bus * ptr_ssd->nr_blocks_per_chip;
 
 	/*if ((ptr_blk_mapping->ptr_blk_table = (uint32_t*)kmalloc (ptr_blk_mapping->nr_blk_table_entries * sizeof (uint32_t), GFP_ATOMIC)) == NULL) {*/
-	if ((ptr_blk_mapping->ptr_blk_table = (uint32_t*)malloc (ptr_blk_mapping->nr_blk_table_entries * sizeof (uint32_t))) == NULL) {
+	if ((ptr_pg_mapping->ptr_pg_table = (uint32_t*)malloc (ptr_pg_mapping->nr_pg_table_entries * sizeof (uint32_t))) == NULL) {
 		printf ("blueftl_mapping_page: failed to allocate the memory for ptr_mapping_table\n");
 		goto error_alloc_mapping_table;
 	}
 
-	for (init_blk_loop = 0; init_blk_loop < ptr_blk_mapping->nr_blk_table_entries; init_blk_loop++) {
-		ptr_blk_mapping->ptr_blk_table[init_blk_loop] = BLOCK_TABLE_FREE;
+	/* Initialize */
+	for (init_pg_loop = 0; init_pg_loop < ptr_pg_mapping->nr_pg_table_entries; init_pg_loop++) {
+		ptr_pg_mapping->ptr_pg_table[init_pg_loop] = PAGE_TABLE_FREE;
 	}
 
 	/* TODO: end */
@@ -95,7 +97,7 @@ error_alloc_mapping_table:
 	/*kfree (ptr_ftl_context->ptr_mapping);*/
 	free (ptr_ftl_context->ptr_mapping);
 
-error_alloc_ftl_block_mapping_context:
+error_alloc_ftl_page_mapping_context:
 	ssdmgmt_destroy_ssd (ptr_ssd);
 
 error_create_ssd_context:
@@ -106,23 +108,23 @@ error_alloc_ftl_context:
 	return NULL;
 }
 
-/* destroy the block mapping table */
-void block_mapping_destroy_ftl_context (struct ftl_context_t* ptr_ftl_context)
+/* destroy the page mapping table */
+void page_mapping_destroy_ftl_context (struct ftl_context_t* ptr_ftl_context)
 {
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
-	struct ftl_block_mapping_context_t* ptr_blk_mapping = (struct ftl_block_mapping_context_t*)ptr_ftl_context->ptr_mapping;
+	struct ftl_page_mapping_context_t* ptr_pg_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
 
-	/* TODO: implement block-level FTL */
-	if (ptr_blk_mapping->ptr_blk_table != NULL) {
+	/* TODO: implement block-level > page-level FTL */
+	if (ptr_pg_mapping->ptr_pg_table != NULL) {
 		/*kfree (ptr_blk_mapping->ptr_blk_table);*/
-		free (ptr_blk_mapping->ptr_blk_table);
+		free (ptr_pg_mapping->ptr_pg_table);
 	}
 	/* TODO: end */
 
 	/* destroy the block mapping context */
-	if (ptr_blk_mapping != NULL)
+	if (ptr_pg_mapping != NULL)
 		/*kfree (ptr_blk_mapping);*/
-		free (ptr_blk_mapping);
+		free (ptr_pg_mapping);
 
 	/* destroy the ssd context */
 	ssdmgmt_destroy_ssd (ptr_ssd);
@@ -134,7 +136,7 @@ void block_mapping_destroy_ftl_context (struct ftl_context_t* ptr_ftl_context)
 }
 
 /* get a physical page number that was mapped to a logical page number before */
-int32_t block_mapping_get_mapped_physical_page_address (
+int32_t page_mapping_get_mapped_physical_page_address (
 	struct ftl_context_t* ptr_ftl_context, 
 	uint32_t logical_page_address, 
 	uint32_t *ptr_bus,
@@ -143,21 +145,39 @@ int32_t block_mapping_get_mapped_physical_page_address (
 	uint32_t *ptr_page)
 {	
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
-	struct ftl_block_mapping_context_t* ptr_blk_mapping = (struct ftl_block_mapping_context_t*)ptr_ftl_context->ptr_mapping;
+	struct ftl_page_mapping_context_t* ptr_pg_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
 
-	uint32_t logical_block_address;
-	uint32_t physical_block_address;
+
+	/* TODO for page mapping */
 	uint32_t page_offset;
+	/* uint32_t logical_page_address;
+	 * it is in parameter */
+	uint32_t physical_page_address;
+	/* TODO is it right? */
+	uint32_t physical_block_address;
 
 	int32_t ret = -1;
 
+	/* TODO remove */
+	// uint32_t logical_block_address;
+	// uint32_t physical_block_address;
+	// uint32_t page_offset;
+
 	/* get the logical block number and the page offset */
-	logical_block_address = logical_page_address / ptr_ssd->nr_pages_per_block;
-	page_offset = logical_page_address % ptr_ssd->nr_pages_per_block;
+	// logical_block_address = logical_page_address / ptr_ssd->nr_pages_per_block;
+	// page_offset = logical_page_address % ptr_ssd->nr_pages_per_block;
+	/* TODO get the logical page number > is in parameter */
+
 
 	/* obtain the physical block address using the block mapping table */
-	physical_block_address = ptr_blk_mapping->ptr_blk_table[logical_block_address];
+	// physical_block_address = ptr_blk_mapping->ptr_blk_table[logical_block_address];
+	/* TODO obtain the page offset and physical block address using the page mapping table */
+	physical_page_address = ptr_pg_mapping->ptr_pg_table[logical_page_address];
+	page_offset = physical_page_address;
+	physical_block_address = physical_page_address / ptr_ssd->nr_pages_per_block;
 
+
+	/* TODO */
 	if (physical_block_address == BLOCK_TABLE_FREE) {
 		/* the requested logical block is not mapped to any physical block */
 		*ptr_bus = *ptr_chip = *ptr_block = *ptr_page = -1;
@@ -183,7 +203,7 @@ int32_t block_mapping_get_mapped_physical_page_address (
 }
 
 /* get a free physical page address */
-int32_t block_mapping_get_free_physical_page_address (
+int32_t page_mapping_get_free_physical_page_address (
 	struct ftl_context_t* ptr_ftl_context, 
 	uint32_t logical_page_address,
 	uint32_t *ptr_bus,
@@ -193,18 +213,24 @@ int32_t block_mapping_get_free_physical_page_address (
 {
 	struct flash_block_t* ptr_erase_block;
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
-	struct ftl_block_mapping_context_t* ptr_blk_mapping = (struct ftl_block_mapping_context_t*)ptr_ftl_context->ptr_mapping;
+	struct ftl_page_mapping_context_t* ptr_pg_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
 
-	uint32_t logical_block_address;
 	uint32_t physical_block_address;
+	uint32_t physical_page_address;
 	uint32_t page_offset;
 
 	/* get the logical block number and the page offset */
-	logical_block_address = logical_page_address / ptr_ssd->nr_pages_per_block;
-	page_offset = logical_page_address % ptr_ssd->nr_pages_per_block;
+	// logical_block_address = logical_page_address / ptr_ssd->nr_pages_per_block;
+	// page_offset = logical_page_address % ptr_ssd->nr_pages_per_block;
 
 	/* obtain the physical block address using the block mapping table */
-	physical_block_address = ptr_blk_mapping->ptr_blk_table[logical_block_address];
+	// physical_block_address = ptr_blk_mapping->ptr_blk_table[logical_block_address];
+
+	/* TODO */
+	physical_page_address = ptr_pg_mapping->ptr_pg_table[logical_page_address];
+	page_offset = physical_page_address;
+	physical_block_address = physical_page_address / ptr_ssd->nr_pages_per_block;
+
 
 	if (physical_block_address != BLOCK_TABLE_FREE) {
 		/* encoding the ssd layout to a phyical block address 
@@ -250,7 +276,7 @@ need_gc:
 }
 
 /* map a logical page address to a physical page address */
-int32_t block_mapping_map_logical_to_physical (
+int32_t page_mapping_map_logical_to_physical (
 	struct ftl_context_t* ptr_ftl_context, 
 	uint32_t logical_page_address, 
 	uint32_t bus,
