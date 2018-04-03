@@ -1,5 +1,4 @@
 // page mappping 관련 함수들 정의 
-// test
 #ifdef KERNEL_MODE
 
 #include <linux/module.h>
@@ -170,14 +169,20 @@ int32_t page_mapping_get_mapped_physical_page_address (
 
 		// 이 부분도 맞는지100퍼 확신이 ;;;;
 		/* decoding the pysical page address */
-		ftl_convert_to_ssd_layout (physical_page_address, ptr_bus, ptr_chip, NULL, ptr_page);
+		ftl_convert_to_ssd_layout (pagelv_physical_page_address, ptr_bus, ptr_chip, ptr_block, ptr_page);
 
 		// gc 봐야함
-		// ptr_erase_page = &ptr_ssd->list_buses[*ptr_bus].list_chips[*ptr_chip].list_ 흐메 ㅠ
+		// ptr_erase_page = &ptr_ssd->list_buses[*ptr_bus].list_chips[*ptr_chip].list_blcoks[*ptr_block];
 
-		if(){}
-		else{}
-	     }
+		if(ptr_page->page_status == PAGE_STATUS_FREE){
+			/* the logical page must be mapped to the corresponding physical page */
+                  	ptr_bus = *ptr_chip = *ptr_block=*ptr_page = -1;
+			ret = -1;
+		}
+
+		else{
+			ret = 0; 
+	     	}	
 	
              return ret;
 }
