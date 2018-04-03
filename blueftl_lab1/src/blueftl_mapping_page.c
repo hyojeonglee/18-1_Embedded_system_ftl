@@ -148,12 +148,13 @@ int32_t page_mapping_get_mapped_physical_page_address (
 	struct ftl_page_mapping_context_t* ptr_pg_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
 
 
-	/* TODO for page mapping */
-	uint32_t page_offset;
-	/* uint32_t logical_page_address;
-	 * it is in parameter */
+	/* TODO for page mapping
+	 * 
+	 * is it useless?
+	 * uint32_t page_offset;
+	 * 
+	 */
 	uint32_t physical_page_address;
-	/* TODO is it right? */
 	uint32_t physical_block_address;
 
 	int32_t ret = -1;
@@ -163,38 +164,28 @@ int32_t page_mapping_get_mapped_physical_page_address (
 	// uint32_t physical_block_address;
 	// uint32_t page_offset;
 
-	/* get the logical block number and the page offset */
-	// logical_block_address = logical_page_address / ptr_ssd->nr_pages_per_block;
-	// page_offset = logical_page_address % ptr_ssd->nr_pages_per_block;
-	/* TODO get the logical page number > is in parameter */
 
-
-	/* obtain the physical block address using the block mapping table */
-	// physical_block_address = ptr_blk_mapping->ptr_blk_table[logical_block_address];
-	/* TODO obtain the page offset and physical block address using the page mapping table */
 	physical_page_address = ptr_pg_mapping->ptr_pg_table[logical_page_address];
-	page_offset = physical_page_address;
 	physical_block_address = physical_page_address / ptr_ssd->nr_pages_per_block;
 
 
-	/* TODO */
-	if (physical_block_address == BLOCK_TABLE_FREE) {
+	if (physical_page_address == PAGE_TABLE_FREE) {
 		/* the requested logical block is not mapped to any physical block */
 		*ptr_bus = *ptr_chip = *ptr_block = *ptr_page = -1;
 		ret = -1;
 	} else {
+		/* TODO is it right to use erase_block? */
 		struct flash_block_t* ptr_erase_block = NULL;
 		
 		/* decoding the physical block address */
-		ftl_convert_to_ssd_layout (physical_block_address, ptr_bus, ptr_chip, ptr_block, NULL);
+		ftl_convert_to_ssd_layout (physical_block_address, ptr_bus, ptr_chip, ptr_block, ptr_page);
 		
 		ptr_erase_block = &ptr_ssd->list_buses[*ptr_bus].list_chips[*ptr_chip].list_blocks[*ptr_block];
-		if (ptr_erase_block->list_pages[page_offset].page_status == PAGE_STATUS_FREE) {
+		if (ptr_page->page_status == PAGE_STATUS_FREE) {
 			/* the logical page must be mapped to the corresponding physical page */
 			*ptr_bus = *ptr_chip = *ptr_block = *ptr_page = -1;
 			ret = -1;
 		} else {
-			*ptr_page = page_offset;
 			ret = 0;
 		}
 	}
