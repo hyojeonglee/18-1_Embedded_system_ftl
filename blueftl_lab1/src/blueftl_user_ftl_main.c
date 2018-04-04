@@ -10,8 +10,9 @@
 #include "blueftl_mapping_block.h"
 /*
  * TODO add include
- * #include "blueftl_mapping_page.h"
  */
+#include "blueftl_mapping_page.h"
+#include "blueftl_gc_page.h"
 #include "blueftl_char.h"
 
 

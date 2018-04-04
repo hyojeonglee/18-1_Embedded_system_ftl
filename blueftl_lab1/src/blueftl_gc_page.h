@@ -4,6 +4,8 @@
 #include <linux/types.h>
 #include "blueftl_ftl_base.h"
 
+int32_t gc_page_trigger_gc_lab ();
+
 int32_t gc_block_trigger_merge (
 	struct ftl_context_t* ptr_ftl_context, 
 	uint32_t logical_page_address, 
