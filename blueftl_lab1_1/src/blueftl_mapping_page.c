@@ -130,6 +130,7 @@ void page_mapping_destroy_ftl_context(struct ftl_context_t* ptr_ftl_context){
 }
 
 /* get a physical page number that was mapped to a logical page number before */
+// MODIFIED
 int32_t page_mapping_get_mapped_physical_page_address (
 	struct ftl_context_t* ptr_ftl_context, 
 	uint32_t logical_page_address, 
@@ -141,38 +142,39 @@ int32_t page_mapping_get_mapped_physical_page_address (
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_conext->ptr_ssd;
 	struct ftl_page_mapping_conext_t* ptr_page_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
 
-	uint32_t logical_block_address;
-	uint32_t physical_block_address;
-	uint32_t page_offset;
+	/* change the parameter :3개 */
+	uint32_t pagelv_logical_page_address; //  LPN
+	uint32_t pagelv_physical_block_address; // 블록주소
+	uint32_t pagelv_page_address; // PPN
 	
 	int32_t ret = -1;
 
 
 	/* 여기 부분이 구현 핵심인 듯 */
-	/* get the logical block number and the page offset */
-	pagelv_page_address = ptr_pagetable_mapping -> ptr_pagetable[logical_page_address];
+	/* get the logical_page_address and the physical block address in pagelv */
+	pagelv_locial_page_address = ptr_pagetable_mapping -> ptr_pagetable[logical_page_address];
  
-	pagelv_physical_block_address = pagelv_page_address / ptr_ssd-> nr_pages_per_block; 
+	pagelv_physical_block_address = pagelv_logical_page_address / ptr_ssd-> nr_pages_per_block; 
 	
 
 	/* obtain the physical page address using the page mapping table */
-	physical_page_address = ptr_page_mapping->ptr_page_table[pagelv_page_address];
+	pagelv_physical_page_address = ptr_page_mapping->ptr_page_table[pagelv_logical_page_address];
 
-	if(physical_page_address == PAGE_TABEL_FREE){
+	if(pagelv_physical_page_address == PAGE_TABEL_FREE){
 		/* the requested logical page is not mapped to any physical page */
 		*ptr_bus = *ptr_chip = *ptr_block = *ptr_page = -1;
 		 ret = -1;
 	}
-        else{ // gc 부분 정확히 보고 다시 봐야할듯 ?
-		//struct flash_block_t* ptr_erase_block = NULL;
-		//struct flash_page_t* ptr_erase_page = NULL;
+        else{ 
+		struct flash_block_t* ptr_erase_block = NULL;
 
-		// 이 부분도 맞는지100퍼 확신이 ;;;;
-		/* decoding the pysical page address */
+		struct flash_page_t* ptr_erase_page = NULL;
+
+		
+		/* decoding the physical block address and the physical page address in the pagelv */
 		ftl_convert_to_ssd_layout (pagelv_physical_page_address, ptr_bus, ptr_chip, ptr_block, ptr_page);
 
-		// gc 봐야함
-		// ptr_erase_page = &ptr_ssd->list_buses[*ptr_bus].list_chips[*ptr_chip].list_blcoks[*ptr_block];
+		ptr_erase_page = &ptr_ssd->list_buses[*ptr_bus].list_chips[*ptr_chip].list_blcoks[*ptr_block].list_pages[*ptr_page];
 
 		if(ptr_page->page_status == PAGE_STATUS_FREE){
 			/* the logical page must be mapped to the corresponding physical page */
@@ -187,8 +189,20 @@ int32_t page_mapping_get_mapped_physical_page_address (
              return ret;
 }
 
+/* get a free physical page address */
+int32_t page_mapping_get_free_physical_page_address(
+	struct ftl_context_t* ptr_ftl_context, 
+	uint32_t logical_page_address, 
+	uint32_t* ptr_bus,
+	uint32_t* ptr_chip,
+	uint32_t* ptr_block,
+	uint32_t* ptr_page)
+{
+	struct flash_block_t* ptr_erase_block;
+	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
+	struct ftl_page_mapping_context_t* ptr_page_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_conetxt_t->ptr_mapping;
 
-
+	
 
 
 
