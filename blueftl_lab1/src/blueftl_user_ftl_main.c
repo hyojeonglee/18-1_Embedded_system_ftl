@@ -8,9 +8,6 @@
 #include "blueftl_util.h"
 #include "blueftl_ftl_base.h"
 #include "blueftl_mapping_block.h"
-/*
- * TODO add include
- */
 #include "blueftl_mapping_page.h"
 #include "blueftl_gc_page.h"
 #include "blueftl_char.h"
@@ -31,6 +28,12 @@ int32_t blueftl_user_ftl_create (struct ssd_params_t* ptr_ssd_params)
 	/* map the block mapping functions to _ftl_base
 	 *
 	 * _ftl_base = ftl_base_block_mapping;
+	 *
+	 */
+
+	/* TODO: if policy is 1 or 2, then choose mapping policy
+	 *
+	 * ref: blueftl_ftl_base.h
 	 *
 	 */
 
