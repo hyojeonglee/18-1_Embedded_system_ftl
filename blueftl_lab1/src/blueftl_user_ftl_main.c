@@ -28,16 +28,14 @@ int32_t blueftl_user_ftl_create (struct ssd_params_t* ptr_ssd_params)
 		return -1;
 	}
 
-	/* map the block mapping functions to _ftl_base */
-	_ftl_base = ftl_base_block_mapping; /* TODO remove it! */
-
-	/*
-	 * TODO block to page mapping 
-	 * _ftl_base = ftl_base_page_mapping;
-	 * 
-	 * TODO add gc file?
+	/* map the block mapping functions to _ftl_base
+	 *
+	 * _ftl_base = ftl_base_block_mapping;
 	 *
 	 */
+
+	/* TODO block to page mapping */
+	_ftl_base = ftl_base_page_mapping;
 
 	/* initialize the user-level FTL */
 	if ((_ptr_ftl_context = _ftl_base.ftl_create_ftl_context (_ptr_vdevice)) == NULL) {
