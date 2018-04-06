@@ -37,7 +37,7 @@ NR_BLOCKS_PER_CHIP	blueftl_user_vdevice.h	13;"	d
 NR_BUSES	blueftl_user_vdevice.h	11;"	d
 NR_CHIPS_PER_BUS	blueftl_user_vdevice.h	12;"	d
 NR_PAGES_PER_BLOCK	blueftl_user_vdevice.h	14;"	d
-OBJS	Makefile	/^OBJS=blueftl_user_vdevice.o blueftl_user_netlink.o blueftl_user_ftl_main.o blueftl_ftl_base.o blueftl_gc_block.o blueftl_mapping_block.o blueftl_ssdmgmt.o blueftl_util.o$/;"	m
+OBJS	Makefile	/^OBJS=blueftl_user_vdevice.o blueftl_user_netlink.o blueftl_user_ftl_main.o blueftl_ftl_base.o blueftl_gc_block.o blueftl_mapping_block.o blueftl_ssdmgmt.o blueftl_util.o blueftl_mapping_page.c $/;"	m
 OFFSET_BUS	blueftl_user_vdevice.h	20;"	d
 OFFSET_CHIP	blueftl_user_vdevice.h	19;"	d
 PAGE_STATUS_FREE	blueftl_ssdmgmt.h	8;"	d
@@ -61,7 +61,6 @@ _BLUESSD_UTIL	blueftl_util.h	2;"	d
 _BLUESSE_FTL_PAGE	blueftl_mapping_page.h	20;"	d
 _DT_NETLINK_H	blueftl_user_netlink.h	2;"	d
 _ftl_base	blueftl_user_ftl_main.c	/^struct ftl_base_t _ftl_base;$/;"	v	typeref:struct:ftl_base_t
-_ftl_base1	blueftl_user_ftl_main.c	/^struct ftl_base_t _ftl_base1;$/;"	v	typeref:struct:ftl_base_t
 _ptr_ftl_context	blueftl_user_ftl_main.c	/^struct ftl_context_t* _ptr_ftl_context = NULL;$/;"	v	typeref:struct:ftl_context_t
 block	blueftl_char.h	/^	int block;		$/;"	m	struct:blueftl_io_req
 block_mapping_create_ftl_context	blueftl_mapping_block.c	/^struct ftl_context_t* block_mapping_create_ftl_context ($/;"	f
@@ -144,7 +143,9 @@ page_main_size	blueftl_user.h	/^	uint32_t page_main_size;$/;"	m	struct:ssd_param
 page_main_size	blueftl_user_vdevice.h	/^	uint32_t page_main_size;$/;"	m	struct:virtual_device_t
 page_mapping_create_ftl_context	blueftl_mapping_page.c	/^struct ftl_context_t* page_mapping_create_ftl_context ($/;"	f
 page_mapping_destroy_ftl_context	blueftl_mapping_page.c	/^void page_mapping_destroy_ftl_context(struct ftl_context_t* ptr_ftl_context){$/;"	f
+page_mapping_get_free_physical_page_address	blueftl_mapping_page.c	/^int32_t page_mapping_get_free_physical_page_address($/;"	f
 page_mapping_get_mapped_physical_page_address	blueftl_mapping_page.c	/^int32_t page_mapping_get_mapped_physical_page_address ($/;"	f
+page_mapping_map_logical_to_physical	blueftl_mapping_page.c	/^int32_t page_mapping_map_logical_to_physical ($/;"	f
 page_oob_size	blueftl_user.h	/^	uint32_t page_oob_size;$/;"	m	struct:ssd_params_t
 page_oob_size	blueftl_user_vdevice.h	/^	uint32_t page_oob_size;$/;"	m	struct:virtual_device_t
 page_status	blueftl_ssdmgmt.h	/^	int32_t page_status;	\/* 1 : free, 2 : invalid, 3: valid *\/$/;"	m	struct:flash_page_t
