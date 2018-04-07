@@ -10,4 +10,4 @@ blueftl_user: blueftl_user.o ${OBJS}
 	${CC} ${CFLAGS} ${INCLUDES} -o $@ blueftl_user.o ${OBJS} ${LIBS}
 
 clean:
-	rm blueftl_user_ftl_main.o blueftl_ftl_base.o blueftl_gc_block.o blueftl_mapping_block.o blueftl_user
+	rm blueftl_user_ftl_main.o blueftl_ftl_base.o blueftl_gc_block.o blueftl_mapping_block.o blueftl_user blueftl_mapping_page.o
