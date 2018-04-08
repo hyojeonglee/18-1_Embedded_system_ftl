@@ -8,6 +8,6 @@
 int32_t gc_page_trigger_gc_lab(
 		struct ftl_context_t* ptr_ftl_context, 
 		uint32_t gc_target_bus, 
-		uint32_t gc	target_chip);
+		uint32_t gc_target_chip);
 
-
+#endif

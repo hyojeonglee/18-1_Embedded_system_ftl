@@ -6,9 +6,13 @@
 #include "blueftl_ftl_base.h"
 #include "blueftl_ssdmgmt.h"
 #include "bluessd_vdevice.h"
+/*
+#include "blueftl_mapping_block.h"
+#include "blueftl_gc block.h"
+*/
 #include "blueftl_mapping_page.h"
 #include "blueftl_gc_page.h"
-//#include "blueftl_gc_block.h"
+
 #include "blueftl_util.h"
 
 #else
@@ -20,9 +24,14 @@
 #include "blueftl_ftl_base.h"
 #include "blueftl_ssdmgmt.h"
 #include "blueftl_user_vdevice.h"
+/*
+#include "blueftl_mappinc_block.h"
+#include "blueftl_gc_block.h"
+*/
 #include "blueftl_mapping_page.h"
-//#include "blueftl_gc_page.h"
-//#include "blueftl_gc_block.h"
+#include "blueftl_gc_page.h"
+
+
 #include "blueftl_util.h"
 
 #endif
@@ -192,7 +201,7 @@ int32_t page_mapping_get_free_physical_page_address(
 	uint32_t* ptr_page)
 {
 	struct flash_block_t* ptr_erase_block;
-	//struct flash_page_t* ptr_erase_page;
+	struct flash_page_t* ptr_erase_page;
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 	struct ftl_page_mapping_context_t* ptr_page_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
 
@@ -214,7 +223,7 @@ int32_t page_mapping_get_free_physical_page_address(
 
  		/* see if the logical page can be written to the physical block found */
 		ptr_erase_block = &ptr_ssd->list_buses[*ptr_bus].list_chips[*ptr_chip].list_blocks[*ptr_block];
-		//ptr_erase_page = &ptr_erase_block->list_pages[pagelv_page_offset];                
+		ptr_erase_page = &ptr_erase_block->list_pages[pagelv_page_offset];                
 
 		if(ptr_erase_block->list_pages[pagelv_page_offset].page_status == PAGE_STATUS_FREE) {
 			uint32_t page_loop = 0;
@@ -234,18 +243,22 @@ int32_t page_mapping_get_free_physical_page_address(
 	}
 
 	else{
-             // 이 부분 잘 모르겠음
-	     //struct flash_page_t* ptr_erase_page = NULL;
-	     struct flash_block_t* ptr_erase_block = NULL;
+		/* get the free page from the page mapping table */
+	    // ptr_erase_block = ssdmgmt_get_free_block(ptr_ssd, 0, 0);
+		
+		int i,j,k,l ;
 
-	
-	     /* get the free page from the page mapping table */
-	     ptr_erase_block = ssdmgmt_get_free_block(ptr_ssd, 0, 0);
-	
-	     *ptr_bus = ptr_erase_block->no_bus;
-         *ptr_chip = ptr_erase_block->no_chip;
-         *ptr_block = ptr_erase_block->no_block;
-	     *ptr_page = pagelv_page_offset;
+        for(i = 0; i < ptr_ssd->nr_buses; i++){
+			for(j = 0; j < ptr_ssd->nr_chips;_per_bus; j++){
+				for(k = 0; k < ptr_ssd->nr_blocks_per_chips; k++){
+					for(l = 0; l < ptr_ssd->nr_pages:_per_block; l++){
+						ptr_erase_page = &ptr_ssd->list_buses[i].list_chhips[j].list_blocks[k].list_pages[l];
+						if(ptr_erase_page->page_status == PAGE_STATUS_FREE){
+							find_free_page = 1;
+							*ptr_bus = i;
+							*ptr_chip = j;
+							*ptr_block = k;
+							*ptr_page = l;
         }
 
 	return 0;
