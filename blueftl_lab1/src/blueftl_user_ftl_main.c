@@ -25,19 +25,14 @@ int32_t blueftl_user_ftl_create (struct ssd_params_t* ptr_ssd_params)
 		return -1;
 	}
 
-	/* map the block mapping functions to _ftl_base
-	 *
-	 * _ftl_base = ftl_base_block_mapping;
-	 *
-	 */
+	/* map the block mapping functions to _ftl_base */
+	//_ftl_base = ftl_base_block_mapping;
 
 	/* TODO: if policy is 1 or 2, then choose mapping policy
 	 *
 	 * ref: blueftl_ftl_base.h
 	 *
 	 */
-
-	/* TODO block to page mapping */
 	_ftl_base = ftl_base_page_mapping;
 
 	/* initialize the user-level FTL */
@@ -134,7 +129,7 @@ int32_t blueftl_user_ftl_main (
 						/* the FTL does not support gc,
 						   so it is necessary to merge the new data with the existing data */
 						is_merge_needed = 1;
-					} else {
+					} else {	
 						printf ("bluessd: garbage collection is not registered\n");
 						ret = -1;
 						goto failed;

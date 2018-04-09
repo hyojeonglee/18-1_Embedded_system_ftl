@@ -22,13 +22,12 @@
 
 /* TODO: implement gc_page_trigger_gc_lab method using gc_block_trigger_merge */
 
-
 #if 1 /* to implement */
 
 int32_t gc_page_trigger_gc_lab (
 		struct ftl_context_t* ptr_ftl_context,
-		int32_t gc_target_bus,
-		int32_t gc_target_chip)
+		uint32_t gc_target_bus,
+		uint32_t gc_target_chip)
 {
 	/* TODO: choose gc policy by option random/greedy/costbenefit that in blueftl_ftl_base.h */
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
@@ -73,6 +72,12 @@ int32_t gc_page_trigger_gc_lab (
 	victim_physical_page_address = ftl_convert_to_physical_page_address (gc_target_bus, gc_target_chip, tmp_target_block, 0); /* TODO: useless ? */
 
 	/* TODO: what is logical page address ? */
+	
+	uint32_t *ptr_bus = NULL;
+	uint32_t *ptr_chip = NULL;
+	uint32_t *ptr_block = NULL;
+	uint32_t *ptr_page = NULL;
+
 	page_mapping_get_free_physical_page_address(ptr_ftl_context, 0, ptr_bus, ptr_chip, ptr_block, ptr_page);
 
 	struct flash_block_t* ptr_free_block = &ptr_ssd->list_buses[*ptr_bus].list_chips[*ptr_chip].list_blocks[*ptr_block];
@@ -103,7 +108,7 @@ int32_t gc_page_trigger_gc_lab (
 	/* step 2. write valid page to free block and update Page table */
 	for (loop_page = 0; loop_page < ptr_ssd->nr_pages_per_block; loop_page++) {
 		if (ptr_victim_block->list_pages[loop_page].page_status == 3) {
-			ptr_page_buff = ptr_block_buff + (loop_page * ptr_device->page_main_size);
+			ptr_page_buff = ptr_block_buff + (loop_page * ptr_vdevice->page_main_size);
 
 			blueftl_user_vdevice_page_write (
 					ptr_vdevice,

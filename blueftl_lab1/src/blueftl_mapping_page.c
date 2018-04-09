@@ -6,7 +6,7 @@
 #include "blueftl_ssdmgmt.h"
 #include "bluessd_vdevice.h"
 #include "blueftl_mapping_page.h"
-// #include "blueftl_gc_page.h"
+#include "blueftl_gc_page.h"
 #include "blueftl_util.h"
 
 #else
@@ -19,7 +19,7 @@
 #include "blueftl_ssdmgmt.h"
 #include "blueftl_user_vdevice.h"
 #include "blueftl_mapping_page.h"
-// #include "blueftl_gc_page.h"
+#include "blueftl_gc_page.h"
 #include "blueftl_util.h"
 
 #endif
@@ -30,9 +30,9 @@ struct ftl_base_t ftl_base_page_mapping = {
 	.ftl_get_mapped_physical_page_address = page_mapping_get_mapped_physical_page_address,
 	.ftl_get_free_physical_page_address = page_mapping_get_free_physical_page_address,
 	.ftl_map_logical_to_physical = page_mapping_map_logical_to_physical,
-	//.ftl_trigger_gc = gc_page_trigger_gc_lab,
-	//.ftl_trigger_gc = gc_page_trigger_option, // 옵션 설정!
-	.ftl_trigger_gc = NULL,
+	//.ftl_trigger_gc = gc_page_trigger_gc_lab, // for test greedy policy
+	//.ftl_trigger_gc = gc_page_trigger_option, // with gc option
+	.ftl_trigger_gc = NULL, // for test
 	.ftl_trigger_merge = NULL,
 	.ftl_trigger_wear_leveler = NULL,
 };
@@ -44,7 +44,7 @@ struct ftl_context_t* page_mapping_create_ftl_context (
 	uint32_t init_pg_loop = 0;
 
 	struct ftl_context_t* ptr_ftl_context = NULL;
-	struct flash_ssd_t* ptr_ssd = NULL; /* TODO usage? */
+	struct flash_ssd_t* ptr_ssd = NULL;
 	struct ftl_page_mapping_context_t* ptr_pg_mapping = NULL;
 
 	/* create the ftl context */
@@ -150,25 +150,25 @@ int32_t page_mapping_get_mapped_physical_page_address (
 	struct ftl_page_mapping_context_t* ptr_pg_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
 
 	uint32_t physical_page_address;
-	// uint32_t physical_block_address;
 
 	int32_t ret = -1;
 
 	/* Get physical page addr and block addr */
 	physical_page_address = ptr_pg_mapping->ptr_pg_table[logical_page_address];
-	// physical_block_address = physical_page_address / ptr_ssd->nr_pages_per_block;
 
+	/*
+	printf("[get_mapped physical page address line 159]\n");
+	printf("%d %d\n\n", physical_page_address, logical_page_address);
+	*/
 
 	if (physical_page_address == PAGE_TABLE_FREE) {
 		/* the requested logical page is not mapped to any physical page */
 		*ptr_bus = *ptr_chip = *ptr_block = *ptr_page = -1;
 		ret = -1;
 	} else {
-		/* TODO is it right to use erase_block? > Check GC */
 		struct flash_page_t* ptr_erase_page = NULL;
 		
 		/* decoding the physical page address */
-		/* TODO is that true, change ptr_block to NULL ? */
 		ftl_convert_to_ssd_layout (physical_page_address, ptr_bus, ptr_chip, ptr_block, ptr_page);
 		
 		ptr_erase_page = &ptr_ssd->list_buses[*ptr_bus].list_chips[*ptr_chip].list_blocks[*ptr_block].list_pages[*ptr_page];
@@ -177,7 +177,6 @@ int32_t page_mapping_get_mapped_physical_page_address (
 			*ptr_bus = *ptr_chip = *ptr_block = *ptr_page = -1;
 			ret = -1;
 		} else {
-			/* TODO:  is this right ? */
 			ret = 0;
 		}
 	}
@@ -194,48 +193,66 @@ int32_t page_mapping_get_free_physical_page_address (
 	uint32_t *ptr_block,
 	uint32_t *ptr_page)
 {
-	struct flash_block_t* ptr_erase_block;
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 	struct ftl_page_mapping_context_t* ptr_pg_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
+	struct flash_block_t* ptr_erase_block;
+	struct flash_page_t ptr_erase_page;
 
-	// uint32_t physical_block_address;
 	uint32_t physical_page_address;
 
 	physical_page_address = ptr_pg_mapping->ptr_pg_table[logical_page_address];
 	
-	int i, j, m, n;
-	int nr_free_block = 0;
+	uint32_t i, j, m, n;
+	uint32_t nr_free_block = 0;
 
-	for (i = 0; i < ptr_ssd->nr_buses; i++) {
-		for (j = 0; j < ptr_ssd->nr_chips_per_bus; j++) {
-			for (m = 0; m < ptr_ssd->nr_blocks_per_chip; m++) {
-				int is_free_block = 0;
-				ptr_erase_block = &ptr_ssd->list_buses[i].list_chips[j].list_blocks[m];
+	if (physical_page_address != PAGE_TABLE_FREE) {
+		// already mapped, so find another physical page that not in used
+		for (i = 0 ; i < ptr_ssd->nr_buses; i++) {
+			for (j = 0; j < ptr_ssd->nr_chips_per_bus; j++) {
+				for (m = 0; m < ptr_ssd->nr_blocks_per_chip; m++) {
+					int is_free_block = 1;
+					ptr_erase_block = &ptr_ssd->list_buses[i].list_chips[j].list_blocks[m];
 
-				/* ptr_erase_block->nr_free_block */
-
-				for(n = 0; n < ptr_ssd->nr_pages_per_block; n++) {
-					if (ptr_erase_block->list_pages[n].page_status == PAGE_STATUS_FREE) {
-						is_free_block = 1;
-					} else {
-						is_free_block = 0;
-						break;
+					for (n = 0; n < ptr_ssd->nr_pages_per_block; n++) {
+						if (ptr_erase_block->list_pages[n].page_status == PAGE_STATUS_FREE) {
+							printf("test mapping 219 line");
+							is_free_block = 1;
+							*ptr_bus = i;
+							*ptr_chip = j;
+							*ptr_block = m;
+							*ptr_page = n;
+							// ftl_convert_to_ssd_layout (physical_page_address, ptr_bus, ptr_chip, ptr_block, ptr_page);
+						} else {
+							is_free_block = 0;
+						}
 					}
-				}
-				if (is_free_block == 1) {
-					nr_free_block++;
-					*ptr_bus = i;
-					*ptr_chip = j;
-					*ptr_block = m;
+
+					if (is_free_block == 1) {
+						printf("[mapping page line 231] This block %d is all free! \n", m);
+						nr_free_block++;
+					}
 				}
 			}
 		}
-	}
 
-	if (nr_free_block < 3)
+	} else {
+		// not mapped to any logical page, so we can use it for writing
+		// ptr_erase_block = ssdmgmt_get_free_block (ptr_ssd, 0, 0);
+		ftl_convert_to_ssd_layout (physical_page_address, ptr_bus, ptr_chip, ptr_block, ptr_page);
+		// ptr_erase_page = ptr_erase_block->list_pages[*ptr_page];
+
+		// *ptr_bus = ptr_erase_block->no_bus;
+		// *ptr_chip = ptr_erase_block->no_chip;
+		// *ptr_block = ptr_erase_block->no_block;
+		// *ptr_page = ptr_erase_page.no_logical_page_addr;
+		// ftl_convert_to_ssd_layout (physcial_page_address, ptr_bus, ptr_chip, ptr_block, ptr_page);
+	}
+	if (physical_page_address != PAGE_TABLE_FREE && nr_free_block < 3) {
+		printf("nr_free_block: %d\n", nr_free_block);
 		return -1;
-	else
-		return 0;
+	}
+	printf("[page mapping 254 line] bus %d, chip %d, block %d, page %d\n", *ptr_bus, *ptr_chip, *ptr_block, *ptr_page);
+	return 0;
 }
 
 
@@ -248,30 +265,18 @@ int32_t page_mapping_map_logical_to_physical (
 	uint32_t block,
 	uint32_t page)
 {
-	//struct flash_block_t* ptr_erase_block;
-	struct flash_page_t* ptr_erase_page;
+	struct flash_block_t* ptr_erase_block;
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 	struct ftl_page_mapping_context_t* ptr_pg_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
 
 	uint32_t physical_page_address;
-	uint32_t physical_block_address;
-	uint32_t physical_page_offset;
 	
 	int32_t ret = -1;
 
 	physical_page_address = ptr_pg_mapping->ptr_pg_table[logical_page_address];
-	physical_block_address = physical_page_address / ptr_ssd->nr_pages_per_block;
-	physical_page_offset = physical_page_address % ptr_ssd->nr_pages_per_block;
-
-	if (physical_page_address != page) {
-		printf ("blueftl_mapping_page: there is something wrong with page mapping (%u != %u)\n", physical_page_address, page);
-		return -1;
-	}
 
 	/* see if the given logical page is alreay mapped or not */
 	if (physical_page_address == PAGE_TABLE_FREE) {
-		/* encoding the ssd layout to a phyical block address 
-		   NOTE: the address of the page must be 0 in the block-level mapping */
 		physical_page_address = ftl_convert_to_physical_page_address (bus, chip, block, page);
 
 		/* update the page mapping table */
@@ -281,9 +286,9 @@ int32_t page_mapping_map_logical_to_physical (
 	/* see if the given page is already written or not */
 
 	ptr_erase_block = &ptr_ssd->list_buses[bus].list_chips[chip].list_blocks[block];
-	if (ptr_erase_block->list_pages[physical_page_offset].page_status == PAGE_STATUS_FREE) {
+	if (ptr_erase_block->list_pages[page].page_status == PAGE_STATUS_FREE) {
 		/* make it valid */
-		ptr_erase_block->list_pages[physical_page_offset].page_status = PAGE_STATUS_VALID;
+		ptr_erase_block->list_pages[page].page_status = PAGE_STATUS_VALID;
 
 		/* increase the number of valid pages while decreasing the number of free pages */
 		ptr_erase_block->nr_valid_pages++;
