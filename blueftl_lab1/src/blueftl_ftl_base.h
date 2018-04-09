@@ -26,6 +26,10 @@ struct ftl_context_t {
 
 	/* virtual device */
 	struct virtual_device_t* ptr_vdevice;
+
+	int32_t latest_bus;
+	int32_t latest_chip;
+	int32_t latest_block;
 };
 
 struct ftl_base_t {

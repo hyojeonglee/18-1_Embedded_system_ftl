@@ -1,7 +1,7 @@
 #ifndef _BLUESSD_FTL_PAGE
 #define _BLUESSD_FTL_PAGE
 
-#define PAGE_TABLE_FREE		-1
+#define PAGE_TABLE_FREE	 0
 
 
 extern struct ftl_base_t ftl_base_page_mapping;
