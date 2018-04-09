@@ -126,7 +126,6 @@ int32_t gc_page_trigger_gc_lab (
 		}
 	}
 
-
 	return ret;
 }
 

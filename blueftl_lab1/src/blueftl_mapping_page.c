@@ -30,9 +30,10 @@ struct ftl_base_t ftl_base_page_mapping = {
 	.ftl_get_mapped_physical_page_address = page_mapping_get_mapped_physical_page_address,
 	.ftl_get_free_physical_page_address = page_mapping_get_free_physical_page_address,
 	.ftl_map_logical_to_physical = page_mapping_map_logical_to_physical,
-	//.ftl_trigger_gc = gc_page_trigger_gc_lab, // for test greedy policy
+	
+	.ftl_trigger_gc = gc_page_trigger_gc_lab, // for test greedy policy
 	//.ftl_trigger_gc = gc_page_trigger_option, // with gc option
-	.ftl_trigger_gc = NULL, // for test
+	// .ftl_trigger_gc = NULL, // for test
 	.ftl_trigger_merge = NULL,
 	.ftl_trigger_wear_leveler = NULL,
 };
@@ -210,16 +211,6 @@ int32_t page_mapping_get_free_physical_page_address (
 	physical_page_address = ptr_pg_mapping->ptr_pg_table[logical_page_address];
 	
 	uint32_t i, j, m, n;
-	// uint32_t nr_free_block = 0;
-	
-
-	// umm....
-//	uint32_t latest_block = ptr_ssd->latest_block;
-//	uint32_t latest_bus = ptr_ssd->latest_bus;
-//	uint32_t latest_chip = ptr_ssd->latest_chip;
-//	latest_chip = 9999;
-//	latest_bus = 9999;
-//	latest_block = 9999;
 
 	if (physical_page_address != PAGE_TABLE_FREE) {
 		// already mapped, so find another physical page that not in used
@@ -238,61 +229,16 @@ int32_t page_mapping_get_free_physical_page_address (
 							*ptr_page = n;
 
 							return 0;
-							// ftl_convert_to_ssd_layout (physical_page_address, ptr_bus, ptr_chip, ptr_block, ptr_page);
 						} 
-						/*
-						else {
-							is_free_block = 0;
-						}
-						*/
 					}
-					/*
-					if (is_free_block == 1) {
-						printf("[mapping page line 231] This block %d is all free! \n", m);
-						nr_free_block++;
-					}
-					*/
 				}
 			}
 		}
 
 	} else {
-		// not mapped to any logical page, so we can use it for writing
-		// ptr_erase_block = ssdmgmt_get_free_block (ptr_ssd, 0, 0);
-		
-		// ftl_convert_to_ssd_layout (physical_page_address, ptr_bus, ptr_chip, ptr_block, ptr_page);
-		
-		// ptr_erase_page = ptr_erase_block->list_pages[*ptr_page];
-
-		// *ptr_bus = ptr_erase_block->no_bus;
-		// *ptr_chip = ptr_erase_block->no_chip;
-		// *ptr_block = ptr_erase_block->no_block;
-		// *ptr_page = ptr_erase_page.no_logical_page_addr;
-		// ftl_convert_to_ssd_layout (physcial_page_address, ptr_bus, ptr_chip, ptr_block, ptr_page);
-		
 		uint32_t loop_page = 0;
 
 		if (physical_page_address == 0) {
-			// get random free page address
-			// ftl_convert_to_ssd_layout (~);
-			/*
-			if (latest_block == ptr_ssd->nr_blocks_per_chip - 1) {
-				*ptr_chip++;
-				*ptr_block = 0;
-			}
-			*/
-				
-/*
-			ptr_erase_block = ssdmgmt_get_free_block (ptr_ssd, 0, 0);
-			
-			*ptr_bus = ptr_erase_block->no_bus;
-			*ptr_chip = ptr_erase_block->no_chip;
-			*ptr_block = ptr_erase_block->no_block;
-
-			latest_chip = ptr_erase_block->no_chip;
-			latest_bus = ptr_erase_block->no_bus;
-			latest_block = ptr_erase_block->no_block;
-*/
 			if(ptr_ftl_context->latest_block == -1 || ptr_ssd->list_buses[ptr_ftl_context->latest_bus].list_chips[ptr_ftl_context->latest_chip].list_blocks[ptr_ftl_context->latest_block].nr_free_pages == 0){
 				
 				ptr_erase_block = ssdmgmt_get_free_block (ptr_ssd, 0, 0);
@@ -306,7 +252,6 @@ int32_t page_mapping_get_free_physical_page_address (
 				ptr_ftl_context->latest_block = *ptr_block;
 				
 			}else {
-
 				ptr_erase_block = &ptr_ssd->list_buses[ptr_ftl_context->latest_bus].list_chips[ptr_ftl_context->latest_chip].list_blocks[ptr_ftl_context->latest_block];
 				for (loop_page = 0; loop_page < ptr_ssd->nr_pages_per_block; loop_page++) {
 					if (ptr_erase_block->list_pages[loop_page].page_status == PAGE_STATUS_FREE) {
@@ -315,21 +260,16 @@ int32_t page_mapping_get_free_physical_page_address (
 						*ptr_block = ptr_erase_block->no_block;
 						*ptr_page = loop_page;
 						break;
+					}
 				}
 			}
-		}
-		return 0;
-	}
+			printf("bus %d chip %d\n", *ptr_bus, *ptr_chip);
 
-	printf("[get free page:279] Need GC! \n");
+			return 0;
+		}
+	}
+	printf("[get free page: 272] Need GC! \n");
 	return -1;
-	/*
-	if (physical_page_address != PAGE_TABLE_FREE && nr_free_block < 3) {
-		printf("nr_free_block: %d\n", nr_free_block);
-		return -1;
-	}
-	*/
-	}
 }
 
 
