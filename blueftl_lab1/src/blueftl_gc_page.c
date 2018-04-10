@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "blueftl_ftl_base.h"
 #include "blueftl_mapping_page.h"
@@ -56,12 +57,13 @@ int32_t gc_page_trigger_gc_lab (
 			tmp_target_block = k;
 		}
 	}	
-	ptr_victim_block = &ptr_ssd->list_buses[gc_target_bus].list_chips[gc_target_chip].list_blocks[tmp_target_block];
-	
 	
 	/* TODO: Random Policy */
+	// srand(time(NULL));
+	// uint32_t tmp_target_block = rand() % 1024;
 	
-	
+	/* choose victim ! */
+	ptr_victim_block = &ptr_ssd->list_buses[gc_target_bus].list_chips[gc_target_chip].list_blocks[tmp_target_block];
 	
 	/* for test */
 
