@@ -39,6 +39,7 @@ int32_t gc_page_trigger_gc_lab (
 	int32_t ret = 0;
 
 	/* TODO: Greedy Policy */
+	
 	uint32_t k;
 	struct flash_block_t* ptr_erase_block;
 	uint32_t min_valid_pg = 65;
@@ -46,20 +47,19 @@ int32_t gc_page_trigger_gc_lab (
 
 	for (k = 0; k < ptr_ssd->nr_blocks_per_chip; k++) {
 		ptr_erase_block = &ptr_ssd->list_buses[gc_target_bus].list_chips[gc_target_chip].list_blocks[k];
-		/* Point */
 		uint32_t tmp_valid_pg = ptr_erase_block->nr_valid_pages;
 		if (tmp_valid_pg < min_valid_pg && ptr_erase_block->nr_free_pages != ptr_ssd->nr_pages_per_block) {
 			min_valid_pg = tmp_valid_pg;
 			tmp_target_block = k;
 		}
 	}
+	
 
 	/* TODO: Random Policy */
 	// srand(time(NULL));
-	// uint32_t tmp_target_block = rand() & 1024;
+	// uint32_t tmp_target_block = rand() % 1024;
 
 	/* TODO: cost benefit */
-
 
 	/* Choose victim ! */
 	ptr_victim_block = &ptr_ssd->list_buses[gc_target_bus].list_chips[gc_target_chip].list_blocks[tmp_target_block];
