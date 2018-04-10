@@ -113,7 +113,7 @@ int32_t blueftl_user_ftl_main (
 						/* garbage collection has been finished; chooses the new free page */
 						if (_ftl_base.ftl_get_free_physical_page_address (
 								_ptr_ftl_context, lpa_curr, &bus, &chip, &block, &page) == -1) {
-							printf ("[user ftl main: 122] get free ppa after gc call\n");
+							printf ("[user ftl main: 116] Wrong!!! can't get free ppa after gc call ");
 							printf ("... bluessd: there is not sufficient space in flash memory.\n");
 							ret = -1;
 							goto failed;

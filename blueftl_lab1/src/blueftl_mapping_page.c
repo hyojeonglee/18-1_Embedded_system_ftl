@@ -222,54 +222,56 @@ int32_t page_mapping_get_free_physical_page_address (
 		/* Change curr physical page status to INVALID */
 		ptr_erase_block = &ptr_ssd->list_buses[*ptr_bus].list_chips[*ptr_chip].list_blocks[*ptr_block];
 		ptr_erase_page = &ptr_ssd->list_buses[*ptr_bus].list_chips[*ptr_chip].list_blocks[*ptr_block].list_pages[*ptr_page];
-		ptr_erase_page->page_status = 2;
-		ptr_erase_block->nr_valid_pages--;
-		ptr_erase_block->nr_invalid_pages++;
+		if(ptr_erase_page->page_status != 2){
+			ptr_erase_page->page_status = 2;
+			ptr_erase_block->nr_valid_pages--;
+			ptr_erase_block->nr_invalid_pages++;
+		}
 
 		int nr_all_used_block = 0;
+		int found_free_page = 0;
+		int is_all_used;
+
 		for (i = 0 ; i < ptr_ssd->nr_buses; i++) {
 			for (j = 0; j < ptr_ssd->nr_chips_per_bus; j++) {
 				for (m = 0; m < ptr_ssd->nr_blocks_per_chip; m++) {
 					ptr_erase_block = &ptr_ssd->list_buses[i].list_chips[j].list_blocks[m];
-					int is_all_used = 0;
+					is_all_used = 0;
 					for (n = 0; n < ptr_ssd->nr_pages_per_block; n++) {
 						if (ptr_erase_block->list_pages[n].page_status == PAGE_STATUS_FREE) {
-							*ptr_bus = i;
-							*ptr_chip = j;
-							*ptr_block = m;
-							*ptr_page = n;
+							if (found_free_page == 0) {
+								*ptr_bus = i;
+								*ptr_chip = j;
+								*ptr_block = m;
+								*ptr_page = n;
+							}
 							
 							is_all_used = 0;
-							printf("[get free: 243] logic %d was already mapped with bus %d chip %d block %d page %d\n", logical_page_address, *ptr_bus, *ptr_chip, *ptr_block, *ptr_page);
-							return 0;
-							// printf("so, find another ... block %d page %d\n", m, n);
-							// return 0;
+							found_free_page = 1;
 						} else {
 							is_all_used = 1;
 						}
 					}
-					if (is_all_used == 1) {
+					if (is_all_used == 1)
 						nr_all_used_block++;
-						if (nr_all_used_block > 1023) { /*  TODO is it reasonable ? */
-							printf("GC triggered! - 1\n");
-							return -1;
-						}
-					}
+				}
+				if (found_free_page == 1) {
+					printf("so, find another ... block %d page %d\n", *ptr_block, *ptr_page);
+					return 0;
+				}
+				else {
 					/*
-					else {
-						printf("so, find another ... block %d \n", m);
-						return 0;
+					if (nr_all_used_block > 10) {
+						printf("GC triggered! - 1\n");
+						return -1;
 					}
 					*/
+					
+					printf("#################################################GC triggered! - 1###########################################\n");
+					return -1;
 				}
 			}
 		}
-		/*
-		if (nr_all_used_block > 10) {
-			printf("GC triggered! - 1\n");
-			return -1;
-		}
-		*/
 	} else {
 		uint32_t loop_page = 0;
 
@@ -279,33 +281,47 @@ int32_t page_mapping_get_free_physical_page_address (
 				ptr_erase_block = ssdmgmt_get_free_block (ptr_ssd, 0, 0);
 
 				int nr_all_used_block = 0;
+				int is_all_used;
+				int found_free_page = 0;
 				if (ptr_erase_block == NULL) {
-					for (m = 0; m < ptr_ssd->nr_blocks_per_chip; m++) {
-						ptr_erase_block = &ptr_ssd->list_buses[0].list_chips[0].list_blocks[m];
-						int is_all_used = 0;
-						for (n = 0; n < ptr_ssd->nr_pages_per_block; n++) {
-							if (ptr_erase_block->list_pages[n].page_status == PAGE_STATUS_FREE) {
-								*ptr_bus = 0;
-								*ptr_chip = 0;
-								*ptr_block = m;
-								*ptr_page = n;
-							
+					for (i = 0 ; i < ptr_ssd->nr_buses; i++) {
+						for (j = 0; j < ptr_ssd->nr_chips_per_bus; j++) {
+							for (m = 0; m < ptr_ssd->nr_blocks_per_chip; m++) {
+								ptr_erase_block = &ptr_ssd->list_buses[i].list_chips[j].list_blocks[m];
 								is_all_used = 0;
-							// printf("so, find another ... block %d page %d\n", m, n);
-							// return 0;
-							} else {
-								is_all_used = 1;
+								for (n = 0; n < ptr_ssd->nr_pages_per_block; n++) {
+									if (ptr_erase_block->list_pages[n].page_status == PAGE_STATUS_FREE) {
+										if (found_free_page == 0) {
+											*ptr_bus = i;
+											*ptr_chip = j;
+											*ptr_block = m;
+											*ptr_page = n;
+										}
+								
+										is_all_used = 0;
+										found_free_page = 1;
+									} else {
+										is_all_used = 1;
+									}
+								}
+								if (is_all_used == 1)
+								nr_all_used_block++;
 							}
-						}
-						if (is_all_used == 1) {
-							nr_all_used_block++;
-							if (nr_all_used_block > 1023) { /*  TODO is it reasonable ? */
-								printf("GC triggered! - 2\n");
+							if (found_free_page == 1) {
+								printf("so, find another ... block %d page %d\n", *ptr_block, *ptr_page);
+								return 0;
+							}
+							else {
+							/*
+								if (nr_all_used_block > 10) {
+									printf("GC triggered! - 1\n");
+									return -1;
+								}
+							*/
+				
+								printf("***********************************************GC triggered! - 2******************************************************\n");
 								return -1;
 							}
-						} else {
-							printf("so, find another ... block %d page %d\n", m, n);
-							return 0;
 						}
 					}
 				}
