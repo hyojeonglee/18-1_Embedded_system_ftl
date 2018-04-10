@@ -30,7 +30,6 @@ struct ftl_base_t ftl_base_page_mapping = {
 	.ftl_get_mapped_physical_page_address = page_mapping_get_mapped_physical_page_address,
 	.ftl_get_free_physical_page_address = page_mapping_get_free_physical_page_address,
 	.ftl_map_logical_to_physical = page_mapping_map_logical_to_physical,
-	
 	.ftl_trigger_gc = gc_page_trigger_gc_lab, // for test greedy policy
 	//.ftl_trigger_gc = gc_page_trigger_option, // with gc option
 	// .ftl_trigger_gc = NULL, // for test
@@ -204,7 +203,7 @@ int32_t page_mapping_get_free_physical_page_address (
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 	struct ftl_page_mapping_context_t* ptr_pg_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
 	struct flash_block_t* ptr_erase_block;
-	struct flash_page_t ptr_erase_page;
+	struct flash_page_t* ptr_erase_page;
 
 	uint32_t physical_page_address;
 
@@ -213,35 +212,104 @@ int32_t page_mapping_get_free_physical_page_address (
 	uint32_t i, j, m, n;
 
 	if (physical_page_address != PAGE_TABLE_FREE) {
-		// already mapped, so find another physical page that not in used
+		/* already mapped, so find another physical page that not in used */
+		
+		/* TODO: need below? */
+		ftl_convert_to_ssd_layout (physical_page_address, ptr_bus, ptr_chip, ptr_block, ptr_page);	
+		
+		printf("[get free: 220] logic %d was already mapped with bus %d chip %d block %d page %d\n", logical_page_address, *ptr_bus, *ptr_chip, *ptr_block, *ptr_page);
+		
+		/* Change curr physical page status to INVALID */
+		ptr_erase_block = &ptr_ssd->list_buses[*ptr_bus].list_chips[*ptr_chip].list_blocks[*ptr_block];
+		ptr_erase_page = &ptr_ssd->list_buses[*ptr_bus].list_chips[*ptr_chip].list_blocks[*ptr_block].list_pages[*ptr_page];
+		ptr_erase_page->page_status = 2;
+		ptr_erase_block->nr_valid_pages--;
+		ptr_erase_block->nr_invalid_pages++;
+
+		int nr_all_used_block = 0;
 		for (i = 0 ; i < ptr_ssd->nr_buses; i++) {
 			for (j = 0; j < ptr_ssd->nr_chips_per_bus; j++) {
 				for (m = 0; m < ptr_ssd->nr_blocks_per_chip; m++) {
-					// int is_free_block = 1;
 					ptr_erase_block = &ptr_ssd->list_buses[i].list_chips[j].list_blocks[m];
-					printf("already mapped line 231\n");
+					int is_all_used = 0;
 					for (n = 0; n < ptr_ssd->nr_pages_per_block; n++) {
 						if (ptr_erase_block->list_pages[n].page_status == PAGE_STATUS_FREE) {
-							// is_free_block = 1;
 							*ptr_bus = i;
 							*ptr_chip = j;
 							*ptr_block = m;
 							*ptr_page = n;
-
+							
+							is_all_used = 0;
+							printf("[get free: 243] logic %d was already mapped with bus %d chip %d block %d page %d\n", logical_page_address, *ptr_bus, *ptr_chip, *ptr_block, *ptr_page);
 							return 0;
-						} 
+							// printf("so, find another ... block %d page %d\n", m, n);
+							// return 0;
+						} else {
+							is_all_used = 1;
+						}
 					}
+					if (is_all_used == 1) {
+						nr_all_used_block++;
+						if (nr_all_used_block > 1023) { /*  TODO is it reasonable ? */
+							printf("GC triggered! - 1\n");
+							return -1;
+						}
+					}
+					/*
+					else {
+						printf("so, find another ... block %d \n", m);
+						return 0;
+					}
+					*/
 				}
 			}
 		}
-
+		/*
+		if (nr_all_used_block > 10) {
+			printf("GC triggered! - 1\n");
+			return -1;
+		}
+		*/
 	} else {
 		uint32_t loop_page = 0;
 
 		if (physical_page_address == 0) {
 			if(ptr_ftl_context->latest_block == -1 || ptr_ssd->list_buses[ptr_ftl_context->latest_bus].list_chips[ptr_ftl_context->latest_chip].list_blocks[ptr_ftl_context->latest_block].nr_free_pages == 0){
-				
+		
 				ptr_erase_block = ssdmgmt_get_free_block (ptr_ssd, 0, 0);
+
+				int nr_all_used_block = 0;
+				if (ptr_erase_block == NULL) {
+					for (m = 0; m < ptr_ssd->nr_blocks_per_chip; m++) {
+						ptr_erase_block = &ptr_ssd->list_buses[0].list_chips[0].list_blocks[m];
+						int is_all_used = 0;
+						for (n = 0; n < ptr_ssd->nr_pages_per_block; n++) {
+							if (ptr_erase_block->list_pages[n].page_status == PAGE_STATUS_FREE) {
+								*ptr_bus = 0;
+								*ptr_chip = 0;
+								*ptr_block = m;
+								*ptr_page = n;
+							
+								is_all_used = 0;
+							// printf("so, find another ... block %d page %d\n", m, n);
+							// return 0;
+							} else {
+								is_all_used = 1;
+							}
+						}
+						if (is_all_used == 1) {
+							nr_all_used_block++;
+							if (nr_all_used_block > 1023) { /*  TODO is it reasonable ? */
+								printf("GC triggered! - 2\n");
+								return -1;
+							}
+						} else {
+							printf("so, find another ... block %d page %d\n", m, n);
+							return 0;
+						}
+					}
+				}
+
 				*ptr_bus = ptr_erase_block->no_bus;
 				*ptr_chip = ptr_erase_block->no_chip;
 				*ptr_block = ptr_erase_block->no_block;
@@ -261,14 +329,18 @@ int32_t page_mapping_get_free_physical_page_address (
 						*ptr_page = loop_page;
 						break;
 					}
+					else {
+					}
 				}
 			}
-			printf("bus %d chip %d\n", *ptr_bus, *ptr_chip);
 
+			printf("[get free physi addr: 299] not mapped to anywhere, so return next free page\n");
+			printf("... block %d page %d\n", *ptr_block, *ptr_page);
 			return 0;
 		}
 	}
-	printf("[get free page: 272] Need GC! \n");
+
+	printf("[get free physi addr: 305] Need GC \n");
 	return -1;
 }
 
@@ -308,8 +380,12 @@ int32_t page_mapping_map_logical_to_physical (
 		ptr_erase_block->list_pages[page].page_status = PAGE_STATUS_VALID;
 
 		/* increase the number of valid pages while decreasing the number of free pages */
+
 		ptr_erase_block->nr_valid_pages++;
 		ptr_erase_block->nr_free_pages--;
+
+		physical_page_address = ftl_convert_to_physical_page_address (bus, chip, block, page);
+		ptr_pg_mapping->ptr_pg_table[logical_page_address] = physical_page_address;
 
 		ret = 0;
 	} else {

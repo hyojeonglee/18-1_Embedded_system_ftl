@@ -72,13 +72,6 @@ struct flash_bus_t {
 struct flash_ssd_t {
 	/* ssd information */
 	uint32_t nr_buses;
-
-	/*
-	int32_t latest_block;
-	int32_t latest_bus;
-	int32_t latest_chip;
-	*/
-
 	uint32_t nr_chips_per_bus;
 	uint32_t nr_blocks_per_chip;
 	uint32_t nr_pages_per_block;

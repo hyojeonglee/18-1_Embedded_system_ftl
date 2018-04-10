@@ -25,14 +25,8 @@ int32_t blueftl_user_ftl_create (struct ssd_params_t* ptr_ssd_params)
 		return -1;
 	}
 
-	/* map the block mapping functions to _ftl_base */
-	//_ftl_base = ftl_base_block_mapping;
+	/* TODO: if policy is 1 or 2, then choose mapping policy (ref: blueftl_ftl_base.h) */
 
-	/* TODO: if policy is 1 or 2, then choose mapping policy
-	 *
-	 * ref: blueftl_ftl_base.h
-	 *
-	 */
 	_ftl_base = ftl_base_page_mapping;
 
 	/* initialize the user-level FTL */
@@ -119,7 +113,8 @@ int32_t blueftl_user_ftl_main (
 						/* garbage collection has been finished; chooses the new free page */
 						if (_ftl_base.ftl_get_free_physical_page_address (
 								_ptr_ftl_context, lpa_curr, &bus, &chip, &block, &page) == -1) {
-							printf ("bluessd: there is not sufficient space in flash memory.\n");
+							printf ("[user ftl main: 122] get free ppa after gc call\n");
+							printf ("... bluessd: there is not sufficient space in flash memory.\n");
 							ret = -1;
 							goto failed;
 						}
