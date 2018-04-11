@@ -232,8 +232,8 @@ int32_t page_mapping_get_free_physical_page_address (
 		int found_free_page = 0;
 		int is_all_used;
 
-		for (i = 0 ; i < ptr_ssd->nr_buses; i++) {
-			for (j = 0; j < ptr_ssd->nr_chips_per_bus; j++) {
+//		for (i = 0 ; i < ptr_ssd->nr_buses; i++) {
+//			for (j = 0; j < ptr_ssd->nr_chips_per_bus; j++) {
 				for (m = 0; m < ptr_ssd->nr_blocks_per_chip; m++) {
 					ptr_erase_block = &ptr_ssd->list_buses[i].list_chips[j].list_blocks[m];
 					is_all_used = 0;
@@ -270,12 +270,12 @@ int32_t page_mapping_get_free_physical_page_address (
 					printf("#################################################GC triggered! - 1###########################################\n");
 					return -1;
 				}
-			}
-		}
+	//		}
+	//	}
 	} else {
 		uint32_t loop_page = 0;
 
-		if (physical_page_address == 0) {
+		if (physical_page_address == PAGE_TABLE_FREE) {
 			if(ptr_ftl_context->latest_block == -1 || ptr_ssd->list_buses[ptr_ftl_context->latest_bus].list_chips[ptr_ftl_context->latest_chip].list_blocks[ptr_ftl_context->latest_block].nr_free_pages == 0){
 		
 				ptr_erase_block = ssdmgmt_get_free_block (ptr_ssd, 0, 0);
@@ -345,8 +345,7 @@ int32_t page_mapping_get_free_physical_page_address (
 						*ptr_page = loop_page;
 						break;
 					}
-					else {
-					}
+					
 				}
 			}
 
