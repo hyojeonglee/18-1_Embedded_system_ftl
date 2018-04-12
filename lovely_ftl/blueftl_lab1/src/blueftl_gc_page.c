@@ -74,7 +74,7 @@ int32_t gc_page_trigger_gc_lab (
 
 	    ptr_erase_block = &ptr_ssd->list_buses[gc_target_bus].list_chips[gc_target_chip].list_blocks[num_random];
 
-		if(ptr_erase_block->is_reserved_block == IS_RESERVED_FOR_GC && ptr_erase_block->nr_valid_pages != 64) {
+		if(ptr_erase_block->nr_free_pages != 64 && ptr_erase_block->nr_valid_pages != 64) {
 			
 			tmp_target_block = num_random;
 			break;
