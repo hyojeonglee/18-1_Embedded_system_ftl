@@ -163,10 +163,6 @@ int32_t page_mapping_get_mapped_physical_page_address (
 	/* Get physical page addr and block addr */
 	physical_page_address = ptr_pg_mapping->ptr_pg_table[logical_page_address];
 
-	/*
-	printf("[get_mapped physical page address line 159]\n");
-	printf("%d %d\n\n", physical_page_address, logical_page_address);
-	*/
 
 	if (physical_page_address == PAGE_TABLE_FREE) {
 		/* the requested logical page is not mapped to any physical page */
@@ -214,10 +210,10 @@ int32_t page_mapping_get_free_physical_page_address (
 	if (physical_page_address != PAGE_TABLE_FREE) {
 		/* already mapped, so find another physical page that not in used */
 		
-		/* TODO: need below? */
 		ftl_convert_to_ssd_layout (physical_page_address, ptr_bus, ptr_chip, ptr_block, ptr_page);	
 		
-		printf("[get free: 220] logic %d was already mapped with bus %d chip %d block %d page %d\n", logical_page_address, *ptr_bus, *ptr_chip, *ptr_block, *ptr_page);
+		// for test
+		// printf("[get free: 220] logic %d was already mapped with bus %d chip %d block %d page %d\n", logical_page_address, *ptr_bus, *ptr_chip, *ptr_block, *ptr_page);
 		
 		/* Change curr physical page status to INVALID */
 		ptr_erase_block = &ptr_ssd->list_buses[*ptr_bus].list_chips[*ptr_chip].list_blocks[*ptr_block];
@@ -232,8 +228,8 @@ int32_t page_mapping_get_free_physical_page_address (
 		int found_free_page = 0;
 		int is_all_used;
 
-//		for (i = 0 ; i < ptr_ssd->nr_buses; i++) {
-//			for (j = 0; j < ptr_ssd->nr_chips_per_bus; j++) {
+		for (i = 0 ; i < ptr_ssd->nr_buses; i++) {
+			for (j = 0; j < ptr_ssd->nr_chips_per_bus; j++) {
 				for (m = 0; m < ptr_ssd->nr_blocks_per_chip; m++) {
 					ptr_erase_block = &ptr_ssd->list_buses[i].list_chips[j].list_blocks[m];
 					is_all_used = 0;
@@ -244,35 +240,38 @@ int32_t page_mapping_get_free_physical_page_address (
 								*ptr_chip = j;
 								*ptr_block = m;
 								*ptr_page = n;
-							}
+							                          }
 							
 							is_all_used = 0;
 							found_free_page = 1;
-						} else {
+						                                                                    }	 
+						else { //block내 free page가 없을때 
 							is_all_used = 1;
-						}
-					}
-					if (is_all_used == 1)
+						                                                                    }
+																	} //blcok내 page scanning is finished 
+					if (is_all_used == 1) // {
 						nr_all_used_block++;
-				}
-				if (found_free_page == 1) {
-					printf("so, find another ... block %d page %d\n", *ptr_block, *ptr_page);
+				      /* For choosing the victim block by random policy */
+						ptr_erase_block->is_reserved_block = IS_RESERVED_FOR_GC; //}
+
+						
+				      /* For choosing the victim block by cost-benefit policy */
+					  //ptr_erase_block->last_modified_time = current time 넣기
+
+				} // chip 내 block scanning is finished 
+				
+			
+				if (found_free_page == 1) { // free page를 찾음
 					return 0;
 				}
 				else {
-					/*
-					if (nr_all_used_block > 10) {
-						printf("GC triggered! - 1\n");
-						return -1;
-					}
-					*/
-					
-					printf("#################################################GC triggered! - 1###########################################\n");
 					return -1;
 				}
-	//		}
-	//	}
-	} else {
+				
+				return -1;
+			}
+		}
+	} else { // if (physical_page_address == PAGE_TABLE_FREE)
 		uint32_t loop_page = 0;
 
 		if (physical_page_address == PAGE_TABLE_FREE) {
@@ -300,26 +299,19 @@ int32_t page_mapping_get_free_physical_page_address (
 								
 										is_all_used = 0;
 										found_free_page = 1;
-									} else {
-										is_all_used = 1;
-									}
-								}
-								if (is_all_used == 1)
+									                                                                    } 
+									    else {
+										is_all_used = 1;}
+								                                                  } //block내 page scannig is finished
+								if (is_all_used == 1) //{
 								nr_all_used_block++;
-							}
+								ptr_erase_block->is_reserved_block = IS_RESERVED_FOR_GC; // }
+																			}
 							if (found_free_page == 1) {
-								printf("so, find another ... block %d page %d\n", *ptr_block, *ptr_page);
 								return 0;
 							}
+							
 							else {
-							/*
-								if (nr_all_used_block > 10) {
-									printf("GC triggered! - 1\n");
-									return -1;
-								}
-							*/
-				
-								printf("***********************************************GC triggered! - 2******************************************************\n");
 								return -1;
 							}
 						}
@@ -345,17 +337,14 @@ int32_t page_mapping_get_free_physical_page_address (
 						*ptr_page = loop_page;
 						break;
 					}
-					
+					else {
+					}
 				}
 			}
-
-			printf("[get free physi addr: 299] not mapped to anywhere, so return next free page\n");
-			printf("... block %d page %d\n", *ptr_block, *ptr_page);
 			return 0;
 		}
 	}
 
-	printf("[get free physi addr: 305] Need GC \n");
 	return -1;
 }
 
