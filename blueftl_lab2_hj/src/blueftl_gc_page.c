@@ -21,9 +21,6 @@
 
 #endif
 
-/* TODO: implement gc_page_trigger_gc_lab method using gc_block_trigger_merge */
-
-
 int32_t gc_page_trigger_gc_lab (
 		struct ftl_context_t* ptr_ftl_context,
 		uint32_t gc_target_bus,
@@ -42,6 +39,7 @@ int32_t gc_page_trigger_gc_lab (
 	int32_t ret = 0;
 
 	/* TODO: Greedy Policy */
+	
 	uint32_t k;
 	struct flash_block_t* ptr_erase_block;
 	uint32_t min_valid_pg = 65;
@@ -49,41 +47,23 @@ int32_t gc_page_trigger_gc_lab (
 
 	for (k = 0; k < ptr_ssd->nr_blocks_per_chip; k++) {
 		ptr_erase_block = &ptr_ssd->list_buses[gc_target_bus].list_chips[gc_target_chip].list_blocks[k];
-		/* Point */
 		uint32_t tmp_valid_pg = ptr_erase_block->nr_valid_pages;
-		/* TODO: is this right to use below conditions ? */
 		if (tmp_valid_pg < min_valid_pg && ptr_erase_block->nr_free_pages != ptr_ssd->nr_pages_per_block) {
 			min_valid_pg = tmp_valid_pg;
 			tmp_target_block = k;
 		}
-	}	
+	}
 	
+
 	/* TODO: Random Policy */
 	// srand(time(NULL));
 	// uint32_t tmp_target_block = rand() % 1024;
-	
-	/* choose victim ! */
+
+	/* TODO: cost benefit */
+
+	/* Choose victim ! */
 	ptr_victim_block = &ptr_ssd->list_buses[gc_target_bus].list_chips[gc_target_chip].list_blocks[tmp_target_block];
-	
-	/* for test */
 
-	printf("[gc page: 62] Choose victim block %d\n", tmp_target_block);
-	printf("... min_valid_pg: %d\n", min_valid_pg);
-	if(ptr_victim_block->nr_valid_pages == 64)
-		printf("assassa\n");
-
-	/*
-	printf("victim block before\n");
-	int count = 0;
-	for (loop_page = 0; loop_page < ptr_ssd->nr_pages_per_block; loop_page++) {
-		if (ptr_victim_block->list_pages[loop_page].page_status == 3) {
-			count++;
-			printf("%d\n", count);
-		}
-	}
-	*/
-
-	/* TODO: initialize buffer */
 	if ((ptr_block_buff = (uint8_t*)malloc (ptr_ssd->nr_pages_per_block * ptr_vdevice->page_main_size)) == NULL) {
 		printf("blueftl_gc_page: the malloc for the buffer failed\n");
 		return -1;
@@ -130,22 +110,6 @@ int32_t gc_page_trigger_gc_lab (
 
 		}
 	}
-	if(ptr_victim_block->nr_free_pages == 0) {
-		printf("*******************************************************************************\n");
-	}
-
-	/*
-	printf("victim block result\n");
-	count = 0;
-	for (loop_page = 0; loop_page < ptr_ssd->nr_pages_per_block; loop_page++) {
-		if (ptr_victim_block->list_pages[loop_page].page_status == 3) {
-			count++;
-			printf("%d\n", count);
-		}
-	}
-	*/
-
-	printf("gc page ret: %d\n", ret);
 
 	return ret;
 }
