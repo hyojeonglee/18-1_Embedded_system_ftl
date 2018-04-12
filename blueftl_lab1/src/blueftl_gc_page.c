@@ -61,7 +61,10 @@ int32_t gc_page_trigger_gc_lab (
 	/* TODO: Random Policy */
 	// srand(time(NULL));
 	// uint32_t tmp_target_block = rand() % 1024;
+
+	/* TODO: cost benefit */
 	
+
 	/* choose victim ! */
 	ptr_victim_block = &ptr_ssd->list_buses[gc_target_bus].list_chips[gc_target_chip].list_blocks[tmp_target_block];
 	
