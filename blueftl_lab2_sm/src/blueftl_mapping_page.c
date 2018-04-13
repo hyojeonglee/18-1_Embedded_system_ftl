@@ -35,6 +35,7 @@ struct ftl_base_t ftl_base_page_mapping = {
 	// .ftl_trigger_gc = NULL, // for test
 	.ftl_trigger_merge = NULL,
 	.ftl_trigger_wear_leveler = NULL,
+	//ftl_trigger_wear_leveler = 
 };
 
 /* create the page mapping table */

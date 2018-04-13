@@ -110,6 +110,7 @@ int32_t gc_page_trigger_gc_lab (
 
 		}
 	}
+    /* call the wear-leveling function */
 
 	return ret;
 }
