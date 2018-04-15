@@ -9,10 +9,11 @@
 #define PAGE_STATUS_INVALID		2
 #define PAGE_STATUS_VALID		3
 
+
 struct flash_page_t {
 	uint32_t no_logical_page_addr;
 	int32_t page_status;	/* 1 : free, 2 : invalid, 3: valid */
-};
+}
 
 struct flash_block_t {
 	/* block id */
