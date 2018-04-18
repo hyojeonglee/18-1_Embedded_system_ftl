@@ -38,12 +38,21 @@
 #define NUM_OF_POOL 		4
 
 
+typedef struct _block_info_node* ptr_list;
 typedef struct _block_info_node{
 	uint32_t 			no_block;
 	uint32_t 			no_chip;
 	uint32_t 			no_bus;
 	uint32_t    		nr_erase_cnt;
+	ptr_list            *link;            
 } dual_pool_block_info;
+
+
+/* Linked litst for wear-levling : dual pool algorithm */
+ptr_list wl_info_list = NULL:
+wl_info_list = (ptr_list) malloc((sizeof(dual_pool_block_info));
+// list 초기화 함수 필요
+//
 
 /* For pool status */
 extern dual_pool_block_info g_max_ec_in_hot_pool;

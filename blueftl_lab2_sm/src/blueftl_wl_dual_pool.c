@@ -29,9 +29,9 @@ void cold_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
 	target_block->hot_cold_pool = HOT_REC_POOL;
 
 	/* Renew the status of each pool */
-	
+
 	//target_block->head_or_tail_rec = NONE;
-	
+
 	uint32_t i,j,k;
 	struct flash_block_t* new_max_rec_block_in_cold_pool;
 	struct flash_block_t* temp_block;
@@ -48,8 +48,8 @@ void cold_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
 			}
 		}
 	}
-	
-       	//new_max_rec_block_in_cold_pool->head_or_tail_rec = TAIL;
+
+	//new_max_rec_block_in_cold_pool->head_or_tail_rec = TAIL;
 	g_max_rec_in_cold_pool.no_bus = new_max_rec_block_in_cold_pool->no_bus;
 	g_max_rec_in_cold_pool.no_chip = new_max_rec_block_in_cold_pool->no_chip;
 	g_max_rec_in_cold_pool.no_block = new_max_rec_block_in_cold_pool->no_block;
@@ -75,7 +75,7 @@ void hot_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
 	/* Renew the status of each pool */
 
 	//target_block->head_or_tail_rec = NONE;
-	
+
 	uint32_t i,j,k;
 	struct flash_block_t* new_min_ec_block_in_hot_pool;
 	struct flash_block_t* temp_block;
@@ -92,8 +92,8 @@ void hot_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
 			}
 		}
 	}
-	
-       	//new_min_ec_block_in_hot_pool->head_or_tail_ec = HEAD;
+
+	//new_min_ec_block_in_hot_pool->head_or_tail_ec = HEAD;
 	g_min_ec_in_hot_pool.no_bus = new_min_ec_block_in_hot_pool->no_bus;
 	g_min_ec_in_hot_pool.no_chip = new_min_ec_block_in_hot_pool->no_chip;
 	g_min_ec_in_hot_pool.no_block = new_min_ec_block_in_hot_pool->no_block;
@@ -111,9 +111,9 @@ struct flash_block_t *get_min_max_ptr(struct ftl_context_t *ptr_ftl_context, dua
 }
 
 struct flash_block_t *get_erase_blk_ptr(struct ftl_context_t *ptr_ftl_context, uint32_t target_bus, uint32_t target_chip, uint32_t target_block){
-          
+
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
-	
+
 	struct flash_block_t* get_erase_blk_ptr = &ptr_ssd->list_buses[target_bus].list_chips[target_chip].list_blocks[target_block];
 
 	return get_rease_blk_ptr;
@@ -126,19 +126,61 @@ struct flash_block_t *get_erase_blk_ptr(struct ftl_context_t *ptr_ftl_context, u
 bool block_copy(struct flash_block_t *ptr_src_block, struct flash_block_t *ptr_tgt_block, struct ftl_context_t *ptr_ftl_context){
 
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
+	struct virtual_device_t* ptr_vdevice = ptr_ftl_context->ptr_vdevice;
 
 	struct flash_block_t* ptr_src_block = ptr_src_block;
 	struct flash_block_t* ptr_tgt_block = ptr_tgt_block;
 
-	uint32_t i ;
+	uint8_t* ptr_page_buff = NULL;
+	uint8_t* ptr_block_buff = NULL;
+	uint32_t i = 0;
+	uint32_t tmp_target_block;
 
-	/* src의 모든 valid page를 찾아서 tgt에 copy */
+	/* read all the valid pages from the source block */
+
+	if((ptr_block_buff = (uint8_t*)malloc(ptr_ssd->nr_pages_per_block * ptr_vdevice->page_main_size)) == NULL){
+		printf("blueftl_copy_page: the mlloc for the buffer failed\n");
+		return false;
+	}
+	memset (ptr_block_buff, 0xFF, ptr_ssd->nr_pages_per_block * ptr_vdevice->page_main_size);
+
 	for(i= 0 ; i < ptr_ssd->nr_pages_per_block; i++){
-		if(ptr_src_block->list.pages[i] == PAGE_STATUS_VALID)
-			ptr_tgt_block
+		if(ptr_src_block->list.pages[i].page_status == PAGE_STATUS_VALID){
+			ptr_page_buff = ptr_block_buff + (i * ptr_vdevice->page_main_size);
+
+			blueftl_user_vdevice_page_read(
+					ptr_vdevice,
+					ptr_src_block->no_bus, ptr_src_block->no_chip, ptr_target_block, i,
+					ptr_vdevice->page_main_size,
+					(char*)ptr_page_buff);
+
+			perf_gc_inc_page_copies();
+		}
+
 	}
 
+	/* write valid page to target block and update page table */
+	// Is it needed to update the page table?
 
+	for(i = 0; i < ptr_ssd->nr_pages_per_block; i++){
+		if(ptr_src_block->list_pages[i].page_status == PAGE_STATUS_VALID){
+			ptr_page_buff = ptr_block_buff + (i * ptr_vdevice->page_main_size);
+
+			blueftl_user_vdevice_page_write(
+					ptr_vdevice,
+					ptr_src_block->no_bus, ptr_src_block->no_chip, ptr_target_block, i,
+					ptr_vdevice->page_main_size,
+					(char*)ptr_page_buff);
+		}//else{
+		//	ptr_src_block->list_pages[i].page_status = PAGE_STATUS_FREE;
+		//	ptr_src_block->nr_free_pages++;
+		//	}
+
+	}
+
+}
+
+return true;
 }
 
 
