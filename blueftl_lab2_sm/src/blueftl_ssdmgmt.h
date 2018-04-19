@@ -13,7 +13,7 @@
 struct flash_page_t {
 	uint32_t no_logical_page_addr;
 	int32_t page_status;	/* 1 : free, 2 : invalid, 3: valid */
-}
+};
 
 struct flash_block_t {
 	/* block id */
@@ -45,10 +45,10 @@ struct flash_block_t {
 	uint32_t nr_recent_erase_cnt;
 
 	/* for dual-pool algorithm, head, tail flag of erasure count list*/
-	uint32_t head_or_tail_ec;
+	//uint32_t head_or_tail_ec;
 
 	/* for dual-pool algorithm, head, tail flag of recent erasure count list */
-	uint32_t head_or_tail_rec;
+	//uint32_t head_or_tail_rec;
 
 	/* for dual-pool algorithm, flag hot cold pool */
 	uint32_t hot_cold_pool;

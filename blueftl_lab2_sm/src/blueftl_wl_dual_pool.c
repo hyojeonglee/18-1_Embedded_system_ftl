@@ -1,246 +1,235 @@
-
 /* This is just a sample blueftl_wearleveling_dualpool code for lab 2*/
 
-#include <linux/module.h> 
+//#include <linux/module.h> 
+
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "blueftl_ftl_base.h"
 #include "blueftl_user_ftl_main.h"
 #include "blueftl_ssdmgmt.h"
-#include "bluessd_user_vdevice.h"
+#include "blueftl_user_vdevice.h"
 #include "blueftl_mapping_page.h"
+#include "blueftl_gc_page.h"
 #include "blueftl_util.h"
 #include "blueftl_wl_dual_pool.h" 
 
-unsigned char migration_buff[FLASH_PAGE_SIZE];
+#define TRUE 1
+#define FALSE 0
 
-bool check_cold_pool_adjustment(){
-	if(g_max_rec_in_cold_pool.nr_erase_cnt - g_min_rec_in_hot_pool.nr_erase_cnt > WEAR_LEVELING_THRESHOLD) return true;
-	else return false;
+
+
+/* For pool status */
+dual_pool_block_info g_max_ec_in_hot_pool;
+dual_pool_block_info g_min_ec_in_hot_pool;
+dual_pool_block_info g_max_rec_in_hot_pool;
+dual_pool_block_info g_min_rec_in_hot_pool;
+
+dual_pool_block_info g_max_ec_in_cold_pool;
+dual_pool_block_info g_min_ec_in_cold_pool;
+dual_pool_block_info g_max_rec_in_cold_pool;
+dual_pool_block_info g_min_rec_in_cold_pool;
+
+
+/* erase all pages which are included in chosen block */
+void page_clean_in_block(struct flash_block_t *ptr_erase_block, struct ftl_context_t *ptr_ftl_context){
+
+	struct vitrual_device_t* ptr_vdevice = ptr_ftl_context->ptr_vdevice;
+	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
+
+	uint32_t i;
+
+	blueftl_user_vdevice_block_erase(ptr_vdevice, ptr_erase_block->no_bus, ptr_erase_block->no_chip, ptr_erase_block->no_block);
+
+	ptr_erase_block->nr_erase_cnt++;
+	ptr_erase_block->nr_recent_erase_cnt++;
+
+	ptr_erase_block->nr_valid_pages = 0;
+	ptr_erase_block->nr_invalid_pages = 0;
+	ptr_erase_block->nr_free_pages = ptr_ssd->nr_pages_per_block;
+   //ptr_erase_block->last_modified_time = timer_get_timestamp_in_us();
+
+	for(i = 0; i < ptr_ssd->nr_pages_per_block; i++ ){
+		ptr_erase_block->list_pages[i].no_logical_page_addr = -1;
+		ptr_erase_block->list_pages[i].page_status = PAGE_STATUS_FREE;
+		}
+}
+
+
+uint32_t check_cold_pool_adjustment(){
+	if((g_max_rec_in_cold_pool.nr_recent_erase_cnt - g_min_rec_in_hot_pool.nr_recent_erase_cnt) > WEAR_LEVELING_THRESHOLD) return TRUE;
+	else return FALSE;
 }
 
 void cold_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
+
+	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
+	
+	if(check_cold_pool_adjustment() == TRUE){
 
 	uint32_t no_bus = g_max_rec_in_cold_pool.no_bus;
 	uint32_t no_chip = g_max_rec_in_cold_pool.no_chip;
 	uint32_t no_block = g_max_rec_in_cold_pool.no_block;
 
-	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
-	struct flash_block_t* target_block = &ptr_ssd->list_buses[no_bus].list_chips[no_chip].list_blocks[no_block];
+	struct flash_block_t* target_block = &(ptr_ssd->list_buses[no_bus].list_chips[no_chip].list_blocks[no_block]);
 
-	target_block->hot_cold_pool = HOT_REC_POOL;
+	target_block->hot_cold_pool = HOT_POOL;
 
 	/* Renew the status of each pool */
+	update_max_min_nr_erase_cnt_in_pool(ptr_ftl_context);
 
-	//target_block->head_or_tail_rec = NONE;
-
-	uint32_t i,j,k;
-	struct flash_block_t* new_max_rec_block_in_cold_pool;
-	struct flash_block_t* temp_block;
-	uint32_t max = -1;
-
-	for(i = 0; i < ptr_ssd->nr_buses; i++){
-		for(j = 0; j < ptr_ssd->nr_chips_per_bus; j++){
-			for(k = 0; k < ptr_ssd->nr_blocks_per_chip; k++){
-				temp_block = &ptr_ssd->list_buses[i].list_chips[j].list_blocks[k];
-				if(temp_block->nr_recent_erase_cnt > max){
-					max = temp_block->nr_recent_erase_cnt;
-					new_max_rec_block_in_cold_pool = temp_block;
-				}
-			}
-		}
 	}
-
-	//new_max_rec_block_in_cold_pool->head_or_tail_rec = TAIL;
-	g_max_rec_in_cold_pool.no_bus = new_max_rec_block_in_cold_pool->no_bus;
-	g_max_rec_in_cold_pool.no_chip = new_max_rec_block_in_cold_pool->no_chip;
-	g_max_rec_in_cold_pool.no_block = new_max_rec_block_in_cold_pool->no_block;
-	g_max_rec_in_cold_pool.nr_erase_cnt = max;
 }
 
-bool check_hot_pool_adjustment(){
-	if(g_max_ec_in_hot_pool.nr_erase_cnt - g_min_ec_in_hot_pool.nr_erase_cnt > 2*WEAR_LEVELING_THRESHOLD) return true;
-	else return false;
+uint32_t check_hot_pool_adjustment(){
+	/* TO DO: is it right g_rec.nr_erase_cnt??? vs g_rec.nr_recent_erase_cnt */
+	if(g_max_rec_in_hot_pool.nr_erase_cnt - g_min_rec_in_hot_pool.nr_erase_cnt > 2*WEAR_LEVELING_THRESHOLD) return TRUE;
+	else return FALSE;
 }
 
 void hot_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
 
-	uint32_t no_bus = g_min_ec_in_hot_pool.no_bus;
-	uint32_t no_chip = g_min_ec_in_hot_pool.no_chip;
-	uint32_t no_block = g_min_ec_in_hot_pool.no_block;
-
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
+
+	if(check_hot_pool_adjustment() == TRUE){
+
+	uint32_t no_bus = g_min_rec_in_hot_pool.no_bus;
+	uint32_t no_chip = g_min_rec_in_hot_pool.no_chip;
+	uint32_t no_block = g_min_rec_in_hot_pool.no_block;
+
 	struct flash_block_t* target_block = &ptr_ssd->list_buses[no_bus].list_chips[no_chip].list_blocks[no_block];
 
 	target_block->hot_cold_pool = COLD_POOL;
 
 	/* Renew the status of each pool */
-
-	//target_block->head_or_tail_rec = NONE;
-
-	uint32_t i,j,k;
-	struct flash_block_t* new_min_ec_block_in_hot_pool;
-	struct flash_block_t* temp_block;
-	uint32_t min = g_max_ec_in_hot_pool.nr_erase_cnt;
-
-	for(i = 0; i < ptr_ssd->nr_buses; i++){
-		for(j = 0; j < ptr_ssd->nr_chips_per_bus; j++){
-			for(k = 0; k < ptr_ssd->nr_blocks_per_chip; k++){
-				temp_block = &ptr_ssd->list_buses[i].list_chips[j].list_blocks[k];
-				if(min > temp_block->nr_erase_cnt){
-					min = temp_block->nr_erase_cnt;
-					new_min_ec_block_in_hot_pool = temp_block;
-				}
-			}
-		}
-	}
-
-	//new_min_ec_block_in_hot_pool->head_or_tail_ec = HEAD;
-	g_min_ec_in_hot_pool.no_bus = new_min_ec_block_in_hot_pool->no_bus;
-	g_min_ec_in_hot_pool.no_chip = new_min_ec_block_in_hot_pool->no_chip;
-	g_min_ec_in_hot_pool.no_block = new_min_ec_block_in_hot_pool->no_block;
-	g_min_ec_in_hot_pool.nr_erase_cnt = min;
+	update_max_min_nr_erase_cnt_in_pool(ptr_ftl_context);}
 }
 
 
-
-bool check_cold_data_migration(){
-	if(g_max_ec_in_hot_pool.nr_erase_cnt - g_min_ec_in_cold_pool.nr_erase_cnt > WEAR_LEVELING_THRESHOLD) return true;
-	else return false;
-}
-
-struct flash_block_t *get_min_max_ptr(struct ftl_context_t *ptr_ftl_context, dual_pool_block_info *pool_info){
-}
-
-struct flash_block_t *get_erase_blk_ptr(struct ftl_context_t *ptr_ftl_context, uint32_t target_bus, uint32_t target_chip, uint32_t target_block){
-
-	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
-
-	struct flash_block_t* get_erase_blk_ptr = &ptr_ssd->list_buses[target_bus].list_chips[target_chip].list_blocks[target_block];
-
-	return get_rease_blk_ptr;
-
-
-}
-
-
-
-bool block_copy(struct flash_block_t *ptr_src_block, struct flash_block_t *ptr_tgt_block, struct ftl_context_t *ptr_ftl_context){
-
-	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
-	struct virtual_device_t* ptr_vdevice = ptr_ftl_context->ptr_vdevice;
-
-	struct flash_block_t* ptr_src_block = ptr_src_block;
-	struct flash_block_t* ptr_tgt_block = ptr_tgt_block;
-
-	uint8_t* ptr_page_buff = NULL;
-	uint8_t* ptr_block_buff = NULL;
-	uint32_t i = 0;
-	uint32_t tmp_target_block;
-
-	/* read all the valid pages from the source block */
-
-	if((ptr_block_buff = (uint8_t*)malloc(ptr_ssd->nr_pages_per_block * ptr_vdevice->page_main_size)) == NULL){
-		printf("blueftl_copy_page: the mlloc for the buffer failed\n");
-		return false;
-	}
-	memset (ptr_block_buff, 0xFF, ptr_ssd->nr_pages_per_block * ptr_vdevice->page_main_size);
-
-	for(i= 0 ; i < ptr_ssd->nr_pages_per_block; i++){
-		if(ptr_src_block->list.pages[i].page_status == PAGE_STATUS_VALID){
-			ptr_page_buff = ptr_block_buff + (i * ptr_vdevice->page_main_size);
-
-			blueftl_user_vdevice_page_read(
-					ptr_vdevice,
-					ptr_src_block->no_bus, ptr_src_block->no_chip, ptr_target_block, i,
-					ptr_vdevice->page_main_size,
-					(char*)ptr_page_buff);
-
-			perf_gc_inc_page_copies();
-		}
-
-	}
-
-	/* write valid page to target block and update page table */
-	// Is it needed to update the page table?
-
-	for(i = 0; i < ptr_ssd->nr_pages_per_block; i++){
-		if(ptr_src_block->list_pages[i].page_status == PAGE_STATUS_VALID){
-			ptr_page_buff = ptr_block_buff + (i * ptr_vdevice->page_main_size);
-
-			blueftl_user_vdevice_page_write(
-					ptr_vdevice,
-					ptr_src_block->no_bus, ptr_src_block->no_chip, ptr_target_block, i,
-					ptr_vdevice->page_main_size,
-					(char*)ptr_page_buff);
-		}//else{
-		//	ptr_src_block->list_pages[i].page_status = PAGE_STATUS_FREE;
-		//	ptr_src_block->nr_free_pages++;
-		//	}
-
-	}
-
-}
-
-return true;
-}
-
-
-bool page_clean_in_block(struct flash_block_t *ptr_block,  struct ftl_context_t *ptr_ftl_context){
-
-	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
-	struct flash_block_t* ptr_erase_block = ptr_block;
-
-	struct flash_page_t* ptr_erase_page  = NULL;
-
-	uint32_t i;
-
-	for(i = 0; i < ptr_ssd->nr_pages_per_block; i++ ){
-		if(ptr_erase_block->list.pages[i] != PAGE_STATUS_FREE){
-			ptr_erase_block->list.pages[i]->page_status = PAGE_STATUS_FREE;
-		}
-	}
-	ptr_erase_block->nr_valid_pages = 0;
-	ptr_erase_block->nr_invalid_pages = 0;
-	ptr_erase_block->nr_free_pages = ptr_ssd->nr_pages_per_block;
-
-	ptr_erase_block->nr_erase_cnt++;
+uint32_t check_cold_data_migration(){
+	if(g_max_ec_in_hot_pool.nr_erase_cnt - g_min_ec_in_cold_pool.nr_erase_cnt > WEAR_LEVELING_THRESHOLD) return TRUE;
+	else return FALSE;
 }
 
 void cold_data_migration(struct ftl_context_t* ptr_ftl_context){
-}
-
-void insert_pool(struct ftl_context_t* ptr_ftl_context, struct flash_block_t* ptr_erase_block){
-}
-
-uint32_t find_max_ec_pool_block_info(struct ftl_context_t* ptr_ftl_context, uint32_t pool){
+	
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
-	struct flash_block_t* ptr_
+	struct flash_block_t* target_block_in_hot_pool = NULL;
+	struct flash_block_t* target_block_in_cold_pool = NULL;
+	struct flash_block_t* reserved = ((struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping)->reserved; 
 
+	if(check_cold_data_migration() == TRUE){
+
+		target_block_in_hot_pool = &(ptr_ssd->list_buses[g_max_ec_in_hot_pool.no_bus].list_chips[g_max_ec_in_hot_pool.no_chip].list_blocks[g_max_ec_in_hot_pool.no_block]);
+
+		target_block_in_cold_pool = &(ptr_ssd->list_buses[g_min_ec_in_cold_pool.no_bus].list_chips[g_min_ec_in_cold_pool.no_chip].list_blocks[g_min_ec_in_cold_pool.no_block]);
+
+		block_copy(target_block_in_hot_pool, reserved, ptr_ftl_context);
+		page_clean_in_block(target_block_in_hot_pool, ptr_ftl_context);
+
+		block_copy(target_block_in_cold_pool, target_block_in_hot_pool, ptr_ftl_context);
+		page_clean_in_block(target_block_in_cold_pool, ptr_ftl_context);
+
+		block_copy(reserved, target_block_in_cold_pool, ptr_ftl_context);
+		page_clean_in_block(reserved, ptr_ftl_context);
+
+		/* For renew the status */
+		target_block_in_hot_pool->hot_cold_pool = COLD_POOL;
+		target_block_in_cold_pool->hot_cold_pool = HOT_POOL;
+
+		/* reset the EEC of block moved to cold pool during cold migration */ 
+		target_block_in_hot_pool->nr_recent_erase_cnt = 0;
+	}
 }
 
-uint32_t find_min_ec_pool_block_info(struct ftl_context_t* ptr_ftl_context, uint32_t pool){
+
+/* making a connection and saving information between dual_pool_block_info and flash_block_t */
+void connection_pool_info_and_block(dual_pool_block_info* dual_pool_info, struct flash_block_t* ptr_block){
+	if(ptr_block == NULL){
+		dual_pool_info->no_bus = 0;
+		dual_pool_info->no_chip = 0;
+		dual_pool_info->no_block = 0;
+
+		dual_pool_info->nr_erase_cnt = 0;
+		dual_pool_info->nr_recent_erase_cnt = 0;
+	}
+	else{
+		dual_pool_info->no_bus = ptr_block->no_bus;
+		dual_pool_info->no_chip = ptr_block->no_chip;
+		dual_pool_info->no_block = ptr_block->no_block;
+
+		dual_pool_info->nr_erase_cnt = ptr_block->nr_erase_cnt;
+		dual_pool_info->nr_recent_erase_cnt = ptr_block->nr_recent_erase_cnt;
+	}
+}
+
+
+uint32_t update_max_min_nr_erase_cnt_in_pool(struct ftl_context_t* ptr_ftl_context){
+	
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
-	struct flash_block_t* ptr_
-}
+	struct flash_block_t* ptr_block;
+
+	uint32_t nr_bus = ptr_ssd->nr_buses;
+	uint32_t nr_chip = ptr_ssd->nr_chips_per_bus;
+	uint32_t nr_block = ptr_ssd->nr_blocks_per_chip;
+
+	uint32_t bus, chip, block;
+
+	struct flash_block_t* max_ec_block_hot = NULL;
+	struct flash_block_t* min_ec_block_hot = NULL;
+
+	struct flash_block_t* max_ec_block_cold = NULL;
+	struct flash_block_t* min_ec_block_cold = NULL;
+
+	struct flash_block_t* max_rec_block_hot = NULL;
+	struct flash_block_t* min_rec_block_hot = NULL;
+
+	struct flash_block_t* max_rec_block_cold = NULL;
+	struct flash_block_t* min_rec_block_cold = NULL;
+
+	for(bus = 0; bus < nr_bus; bus++){
+		for(chip = 0; chip < nr_chip; chip++){
+			for(block = 0; block < nr_block; block++){
+				ptr_block = &(ptr_ssd->list_buses[bus].list_chips[chip].list_blocks[block]);
+
+				if(ptr_block->hot_cold_pool == HOT_POOL){
+					if(max_ec_block_hot == NULL){
+					max_ec_block_hot = max_rec_block_hot = min_ec_block_hot = min_rec_block_hot = ptr_block;}
+					if(max_ec_block_hot->nr_erase_cnt < ptr_block->nr_erase_cnt){max_ec_block_hot = ptr_block;}
+					if(max_rec_block_hot->nr_recent_erase_cnt < ptr_block->nr_recent_erase_cnt){max_rec_block_hot = ptr_block;}
+					if(min_ec_block_hot->nr_erase_cnt >= ptr_block->nr_erase_cnt){min_ec_block_hot = ptr_block;}
+					if(min_rec_block_hot->nr_recent_erase_cnt >= ptr_block->nr_recent_erase_cnt){min_rec_block_hot = ptr_block;}
+					}
 
 
-uint32_t find_max_rec_pool_block_info(struct ftl_context_t* ptr_ftl_context, uint32_t pool){
+				else if(ptr_block->hot_cold_pool == COLD_POOL){
+					if(max_ec_block_cold == NULL){
+					max_ec_block_cold = max_rec_block_cold = min_ec_block_cold = min_rec_block_cold = ptr_block;}
+					if(max_ec_block_cold->nr_erase_cnt < ptr_block->nr_erase_cnt){max_ec_block_cold = ptr_block;}
+					if(max_rec_block_cold->nr_recent_erase_cnt < ptr_block->nr_recent_erase_cnt){max_rec_block_cold = ptr_block;}
+					if(min_ec_block_cold->nr_erase_cnt >= ptr_block->nr_erase_cnt){min_ec_block_cold = ptr_block;}
+					if(min_rec_block_cold->nr_recent_erase_cnt >= ptr_block->nr_recent_erase_cnt){min_rec_block_cold = ptr_block;}
+					}
+				else{
+					printf("There is an ERROR in constructing hot & cold pool");
+					return -1; // Is it right?
+				    }
+				}
+			}
+		}
 
-	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
-	struct flash_block_t* ptr_
+/* making a connection and saving information between dual_pool_block_info and flash_block_t */
 
-}
+	connection_pool_info_and_block(&g_max_ec_in_hot_pool, max_ec_block_hot);
+	connection_pool_info_and_block(&g_max_rec_in_hot_pool, max_rec_block_hot);
+	connection_pool_info_and_block(&g_min_ec_in_hot_pool, min_ec_block_hot);
+	connection_pool_info_and_block(&g_min_rec_in_hot_pool, min_rec_block_hot);
 
+	connection_pool_info_and_block(&g_max_ec_in_cold_pool, max_ec_block_cold);
+	connection_pool_info_and_block(&g_max_rec_in_cold_pool, max_rec_block_cold);
+	connection_pool_info_and_block(&g_min_ec_in_cold_pool, min_ec_block_cold);
+	connection_pool_info_and_block(&g_min_rec_in_cold_pool, min_ec_block_cold);
 
-uint32_t find_min_rec_pool_block_info(struct ftl_context_t* ptr_ftl_context, uint32_t pool){
-
-	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
-	struct flash_block_t* ptr_
-
-}
-
-uint32_t update_max_min_nr_erase_cnt_in_pool( int pool, int type, int min_max, int bus, int chip, int block, uint32_t nr_erase_cnt){
-}
-
-void init_global_wear_leveling_metadata(void){
+	return 0;
 }
 

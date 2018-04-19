@@ -11,7 +11,7 @@
 #include "blueftl_mapping_page.h"
 #include "blueftl_gc_page.h"
 #include "blueftl_char.h"
-
+#include "blueftl_wl_dual_pool.h"
 
 struct ftl_base_t _ftl_base;
 struct ftl_context_t* _ptr_ftl_context = NULL;
