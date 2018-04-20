@@ -5,6 +5,7 @@
 #include "blueftl_mapping_page.h"
 #include "blueftl_gc_page.h"
 #include "blueftl_util.h"
+#include "blueftl_wl_dual_pool.h"
 
 #else
 
@@ -18,6 +19,7 @@
 #include "blueftl_gc_page.h"
 #include "blueftl_util.h"
 #include "blueftl_user_vdevice.h"
+#include "blueftl_wl_dual_pool.h"
 
 #endif
 
@@ -111,6 +113,17 @@ int32_t gc_page_trigger_gc_lab (
 		}
 	}
 
+
+	/* for wear leveling */
+	check_max_min_nr_erase_cnt();
+	if (check_cold_data_migration() == TRUE)
+		cold_data_migration();
+	if (check_cold_pool_adjustment() == TRUE)
+		cold_data_adjustment();
+	if (check_hot_pool_adjustment() == TRUE)
+		hot_pool_adjustment();
+	/* end */
+	
 	return ret;
 }
 
