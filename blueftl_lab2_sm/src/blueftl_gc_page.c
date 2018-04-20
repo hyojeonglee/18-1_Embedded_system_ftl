@@ -128,8 +128,10 @@ int32_t gc_page_trigger_gc_lab (
     /* call the wear-leveling function */
 
 
-#if WL_ON
- 			update_max_min_nr_erase_cnt_int_pool(ptr_ftl_context);
+/* If you want execute wear-leving */
+
+#if WEAR_LEVELING
+ 			update_max_min_nr_erase_cnt_in_pool(ptr_ftl_context);
  			cold_data_migration(ptr_ftl_context);
  			cold_pool_adjustment(ptr_ftl_context);
  			hot_pool_adjustment(ptr_ftl_context);
