@@ -115,13 +115,13 @@ int32_t gc_page_trigger_gc_lab (
 
 
 	/* for wear leveling */
-	check_max_min_nr_erase_cnt();
-	if (check_cold_data_migration() == TRUE)
-		cold_data_migration();
-	if (check_cold_pool_adjustment() == TRUE)
-		cold_data_adjustment();
-	if (check_hot_pool_adjustment() == TRUE)
-		hot_pool_adjustment();
+	check_max_min_nr_erase_cnt(ptr_ftl_context);
+	if (check_cold_data_migration(ptr_ftl_context) == TRUE)
+		cold_data_migration(ptr_ftl_context);
+	if (check_cold_pool_adjustment(ptr_ftl_context) == TRUE)
+		cold_data_adjustment(ptr_ftl_context);
+	if (check_hot_pool_adjustment(ptr_ftl_context) == TRUE)
+		hot_pool_adjustment(ptr_ftl_context);
 	/* end */
 	
 	return ret;
