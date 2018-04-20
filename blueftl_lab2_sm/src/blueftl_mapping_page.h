@@ -1,7 +1,6 @@
 #ifndef _BLUESSD_FTL_PAGE
 #define _BLUESSD_FTL_PAGE
 
-//#ifndef PAGE_TABLE_FREE  : is it not needed?
 #define PAGE_TABLE_FREE	 -1
 
 

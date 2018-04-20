@@ -19,7 +19,7 @@
 
 
 
-/* For pool status */
+/* For pool management */
 dual_pool_block_info g_max_ec_in_hot_pool;
 dual_pool_block_info g_min_ec_in_hot_pool;
 dual_pool_block_info g_max_rec_in_hot_pool;
@@ -50,7 +50,7 @@ void page_clean_in_block(struct flash_block_t *ptr_erase_block, struct ftl_conte
    //ptr_erase_block->last_modified_time = timer_get_timestamp_in_us();
 
 	for(i = 0; i < ptr_ssd->nr_pages_per_block; i++ ){
-		ptr_erase_block->list_pages[i].no_logical_page_addr = -1;
+		ptr_erase_block->list_pages[i].no_logical_page_addr = PAGE_TABLE_FREE;
 		ptr_erase_block->list_pages[i].page_status = PAGE_STATUS_FREE;
 		}
 }
@@ -66,6 +66,7 @@ void cold_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 	
 	if(check_cold_pool_adjustment() == TRUE){
+		//if(timer_get_timestamp_in_sec() - dbgtime > 3) printf("COLD POOL adjustment\n");
 
 	uint32_t no_bus = g_max_rec_in_cold_pool.no_bus;
 	uint32_t no_chip = g_max_rec_in_cold_pool.no_chip;
@@ -82,8 +83,8 @@ void cold_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
 }
 
 uint32_t check_hot_pool_adjustment(){
-	/* TO DO: is it right g_rec.nr_erase_cnt??? vs g_rec.nr_recent_erase_cnt */
-	if(g_max_rec_in_hot_pool.nr_erase_cnt - g_min_rec_in_hot_pool.nr_erase_cnt > 2*WEAR_LEVELING_THRESHOLD) return TRUE;
+	/* TO DO: is it right g_rec.nr_erase_cnt??? vs g_ec.nr_recent_erase_cnt */
+	if(g_max_rec_in_hot_pool.nr_erase_cnt - g_min_rec_in_hot_pool.nr_erase_cnt > WEAR_LEVELING_THRESHOLD*2) return TRUE;
 	else return FALSE;
 }
 
@@ -92,6 +93,7 @@ void hot_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 
 	if(check_hot_pool_adjustment() == TRUE){
+		//if(timer_get_timestamp_in_sec() - dbgtime > 3) printf("HOT POOL adjustment\n");
 
 	uint32_t no_bus = g_min_rec_in_hot_pool.no_bus;
 	uint32_t no_chip = g_min_rec_in_hot_pool.no_chip;
@@ -119,6 +121,8 @@ void cold_data_migration(struct ftl_context_t* ptr_ftl_context){
 	struct flash_block_t* reserved = ((struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping)->reserved; 
 
 	if(check_cold_data_migration() == TRUE){
+
+		//if(timer_get_timestamp_in_sec() - dbgtime > 3) printf("COLD DATA MIAGRATION\n");
 
 		target_block_in_hot_pool = &(ptr_ssd->list_buses[g_max_ec_in_hot_pool.no_bus].list_chips[g_max_ec_in_hot_pool.no_chip].list_blocks[g_max_ec_in_hot_pool.no_block]);
 

@@ -43,7 +43,7 @@ typedef struct _block_info_node{
 	uint32_t 			no_block;
 	uint32_t 			no_chip;
 	uint32_t 			no_bus;
-	uint32_t    		nr_erase_cnt;
+	uint32_t    			nr_erase_cnt;
 	uint32_t			nr_recent_erase_cnt;
 } dual_pool_block_info;
 
@@ -87,11 +87,11 @@ struct ftl_wl_t {
 };
 */
 
-void check_max_min_nr_erase_cnt(struct ftl_context_t *ptr_ftl_context, struct flash_block_t* ptr_erase_block);
+void check_max_min_nr_erase_cnt(struct ftl_context_t* ptr_ftl_context, struct flash_block_t* ptr_erase_block);
+
 uint32_t update_max_min_nr_erase_cnt_in_pool(struct ftl_context_t* ptr_ftl_context);
 
 uint32_t check_cold_data_migration(void);
-
 uint32_t check_cold_pool_adjustment(void);
 uint32_t check_hot_pool_adjustment(void);
 
