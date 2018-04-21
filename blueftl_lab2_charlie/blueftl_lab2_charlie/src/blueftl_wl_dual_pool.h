@@ -20,8 +20,8 @@
 #define MAX 			     0
 #define MIN  				 1 
 
-#define HOT_POOL 			 0
-#define COLD_POOL 			 1
+#define HOT_POOL 			 1
+#define COLD_POOL 			 0
 #define HOT_REC_POOL 		 2
 #define COLD_REC_POOL 		 3
 
@@ -64,7 +64,7 @@ void check_max_min_nr_erase_cnt(struct ftl_context_t *ptr_ftl_context);
 /* void check_max_min_nr_erase_cnt(struct ftl_context_t *ptr_ftl_context, struct flash_block_t* ptr_erase_block); */
 uint32_t check_cold_data_migration(struct ftl_context_t *ptr_ftl_context);
 void cold_data_migration(struct ftl_context_t* ptr_ftl_context_t);
-uint32_t update_max_min_nr_erase_cnt_in_pool( int pool, int type, int min_max, int bus, int chip, int block, uint32_t erasure_count);
+uint32_t update_max_min_nr_erase_cnt_in_pool( struct ftl_context_t *ptr_ftl_context);
 uint32_t check_cold_pool_adjustment(struct ftl_context_t *ptr_ftl_context);
 uint32_t check_hot_pool_adjustment(struct ftl_context_t *ptr_ftl_context);
 void cold_pool_adjustment(struct ftl_context_t *ptr_ftl_context_t);
