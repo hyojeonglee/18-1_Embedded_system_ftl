@@ -16,6 +16,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <unistd.h>
+#include <string.h>
 
 #include "blueftl_ftl_base.h"
 #include "blueftl_ssdmgmt.h"
@@ -91,6 +93,37 @@ void perf_wl_inc_page_copies (void)
 void perf_wl_inc_blk_erasures (void)
 {
 	_perf_wl_nr_blk_erasures++;
+}
+
+void perf_wl_set_blk_max_erasures(int32_t cnt)
+{
+	_perf_wl_nr_maximum_erasures = cnt;
+}
+
+void perf_wl_log_blk_erasures(struct ftl_context_t* ptr_ftl_context)
+{
+	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
+	int i;
+	FILE *fp;
+	char index[1000], access[1000];
+	char *line = NULL;
+	char *file_path = "log";
+	struct flash_block_t* ptr_block;
+
+	if ((fp = fopen(file_path, "w")) != NULL) {
+		fwrite("X Y\n", 4, 1, fp);
+		for (i = 0; i < ptr_ssd->nr_blocks_per_chip; i++) {
+			ptr_block = &ptr_ssd->list_buses[0].list_chips[0].list_blocks[i];
+			sprintf(index, "%u", ptr_block->no_block);
+			sprintf(access, "%u", ptr_block->nr_erase_cnt);
+			line = (char *)malloc((strlen(index) + strlen(access) + 2) *sizeof(char));
+			sprintf(line, "%s %s\n", index, access);
+			fwrite(line, strlen(line), 1, fp);
+		}
+	}
+	else
+		printf("no file!\n");
+	fclose(fp);
 }
 
 void perf_display_results (void)
