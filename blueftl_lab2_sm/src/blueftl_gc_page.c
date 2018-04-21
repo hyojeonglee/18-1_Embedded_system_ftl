@@ -36,6 +36,33 @@ void gc_page_trigger_init(struct ftl_context_t* ptr_ftl_context){
 }
 
 
+
+/* TODO: Random Policy */
+struct flash_block_t* gc_random_victim(struct flash_ssd_t* ptr_ssd){
+	uint32_t bus, chip, block;
+	
+	struct flash_block_t* victim = NULL;
+
+	bus = rand() % ptr_ssd->nr_buses;
+	chip = rand() % ptr_ssd->nr_chips_per_bus;
+	block = rand() % ptr_ssd->nr_blocks_per_chip;
+
+	while(ptr_ssd->list_buses[bus].list_chips[chip].list_blocks[block].is_reserved_block ||
+	      ptr_ssd->list_buses[bus].list-chips[chip].list_blocks[block].nr_valid_pages == ptr_ssd->nr_pages_per_block){
+	bus = rand() % ptr_ssd->nr_buses;
+	chip = rand() % ptr_ssd->nr_chips_per_bus;
+	block = rand() % ptr_ssd->nr_blocks_per_chip;
+	}
+
+	victim = &(ptr_ssd->list_buses[bus].list_chips[chip].list_blocks[block];
+
+			return victim;
+}
+
+/* TODO: Cost-Benefit Policy */
+
+
+
 int32_t gc_page_trigger_gc_lab (
 		struct ftl_context_t* ptr_ftl_context,
 		uint32_t gc_target_bus,
@@ -46,12 +73,14 @@ int32_t gc_page_trigger_gc_lab (
 	struct virtual_device_t* ptr_vdevice = ptr_ftl_context->ptr_vdevice;
 		
 	struct flash_block_t* ptr_victim_block = NULL;
+	struct flash_block_t* ptr_temp_block = NULL;
+	struct flash_block_t* ptr_reserved_block = ((struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping)->reserved;
 
-	uint8_t* ptr_page_buff = NULL;
-	uint8_t* ptr_block_buff = NULL;
-	uint32_t loop_page = 0;
+	//uint8_t* ptr_page_buff = NULL;
+	//uint8_t* ptr_block_buff = NULL;
+	//uint32_t loop_page = 0;
 
-	int32_t ret = 0;
+	//int32_t ret = 0;
 
 	/* TODO: Greedy Policy */
 	
@@ -70,62 +99,93 @@ int32_t gc_page_trigger_gc_lab (
 	}
 	
 
-	/* TODO: Random Policy */
-
-
-	/* TODO: cost benefit */
-
-
 	/* Choose victim ! */
 	ptr_victim_block = &ptr_ssd->list_buses[gc_target_bus].list_chips[gc_target_chip].list_blocks[tmp_target_block];
 
-	if ((ptr_block_buff = (uint8_t*)malloc (ptr_ssd->nr_pages_per_block * ptr_vdevice->page_main_size)) == NULL) {
-		printf("blueftl_gc_page: the malloc for the buffer failed\n");
-		return -1;
+
+	/* move the valid pages from the victim block to reserved block */
+	block_copy(ptr_ftl_context, ptr_victim_block, ptr_reserved_block);
+
+	/* erase the victim block */
+	blueftl_user_vdevice_block_erase(ptr_vdevice, ptr_victim_block->no_bus, ptr_victim_block->no_chip, ptr_victim_block->no_block);
+	
+	uint32_t offset;
+	for(offset = 0; offset < ptr_ssd->nr_pages_per_block; offser++){
+		ptr_victim_block->list_pages[offser].page_status = PAGE_STATUS_FREE;
+	
 	}
-	memset (ptr_block_buff, 0xFF, ptr_ssd->nr_pages_per_block * ptr_vdevice->page_main_size);
 
-	/* step 1. read all the valid pages from the target block */
-	for (loop_page = 0; loop_page < ptr_ssd->nr_pages_per_block; loop_page++) {
-		if (ptr_victim_block->list_pages[loop_page].page_status == 3) {
-			ptr_page_buff = ptr_block_buff + (loop_page * ptr_vdevice->page_main_size);
+	ptr_reserved_block->is_reserved_block = NOT_RESERVED;
 
-			blueftl_user_vdevice_page_read (
-					_ptr_vdevice,
-					gc_target_bus, gc_target_chip, tmp_target_block, loop_page,
-					ptr_vdevice->page_main_size,
-					(char*)ptr_page_buff);
+	ptr_temp_block = ptr_reserved_block;
 
-			perf_gc_inc_page_copies ();
-		}
+	/* set the new reserved block : erased victim block */
+	((struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping)->reserved = victim;
+	ptr_reserved_block = ((struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping)->reserved;
+
+	ptr_reserved_block->is_reserved_block = RESERVED;
+
+	ptr_reserved_block->nr_valid_pages = 0;
+	ptr_reserved_block->nr_invalid_pages = 0;
+	ptr_reserved_block->nr_free_pages = ptr_ssd->nr_pages_per_block;
+	//ptr_reserved_block->las_modified_time = timer_get_timestamp_in_us();
+
+	ptr_reserved_block0>nr_erase_cnt++;
+	ptr_reserved_block0>nr_recent_erase_cnt++;
+	
+
+	uint32_t i;
+	for(i = 0; i < ptr_ssd->nr_pages_per_block; i++){
+		if(ptr_reserved_block->list_pages[i].page_status == PAGE_STATUS_VALID) ptr_reserved_block->nr_valid_pages++;
 	}
 	
-	/* step 2. free victim block */
-	blueftl_user_vdevice_block_erase (ptr_vdevice, gc_target_bus, gc_target_chip, tmp_target_block);
-	ptr_victim_block->nr_erase_cnt++;	
-	perf_gc_inc_blk_erasures ();
 
-	ptr_victim_block->nr_invalid_pages = 0;
-	ptr_victim_block->nr_free_pages = 0;
+	//if ((ptr_block_buff = (uint8_t*)malloc (ptr_ssd->nr_pages_per_block * ptr_vdevice->page_main_size)) == NULL) {
+	//	printf("blueftl_gc_page: the malloc for the buffer failed\n");
+	//	return -1;
+	//}
+	//memset (ptr_block_buff, 0xFF, ptr_ssd->nr_pages_per_block * ptr_vdevice->page_main_size);
+
+//	/* step 1. read all the valid pages from the target block */
+	//for (loop_page = 0; loop_page < ptr_ssd->nr_pages_per_block; loop_page++) {
+	//	if (ptr_victim_block->list_pages[loop_page].page_status == 3) {
+	//		ptr_page_buf//f = ptr_block_buff + (loop_page * ptr_vdevice->page_main_size);
+//
+//			blueftl_user_vdevice_page_read (
+//					_ptr_vdevice,
+//					gc_target_bus, gc_target_chip, tmp_target_block, loop_page,
+//					ptr_vdevice->page_main_size,
+//					(char*)ptr_page_buff);
+/
+//			perf_gc_inc_page_copies ();
+//		}
+//	}
+//	
+//	/* step 2. free victim block */
+//	blueftl_user_vdevice_block_erase (ptr_vdevice, gc_target_bus, gc_target_chip, tmp_target_block);
+//	ptr_victim_block->nr_erase_cnt++;	
+//	perf_gc_inc_blk_erasures ();
+//
+//	ptr_victim_block->nr_invalid_pages = 0;
+//	ptr_victim_block->nr_free_pages = 0;
 
 	/* step 3. write valid page to free block and update page table */
-	for (loop_page = 0; loop_page < ptr_ssd->nr_pages_per_block; loop_page++) {
-		if (ptr_victim_block->list_pages[loop_page].page_status == 3) {
-			ptr_page_buff = ptr_block_buff + (loop_page * ptr_vdevice->page_main_size);
-
-			blueftl_user_vdevice_page_write (
-					ptr_vdevice,
-					gc_target_bus, gc_target_chip, tmp_target_block, loop_page,
-					ptr_vdevice->page_main_size,
-					(char*)ptr_page_buff);
-			
-		} else {
-			ptr_victim_block->list_pages[loop_page].page_status = 1;
-			ptr_victim_block->nr_free_pages++;
-
-		}
-	}
-    /* call the wear-leveling function */
+//	for (loop_page = 0; loop_page < ptr_ssd->nr_pages_per_block; loop_page++) {
+//		if (ptr_victim_block->list_pages[loop_page].page_status == 3) {
+//			ptr_page_buff = ptr_block_buff + (loop_page * ptr_vdevice->page_main_size);
+//
+//			blueftl_user_vdevice_page_write (
+//					ptr_vdevice,
+//					gc_target_bus, gc_target_chip, tmp_target_block, loop_page,
+//					ptr_vdevice->page_main_size,
+//					(char*)ptr_page_buff);
+//			
+//		} else {
+//			ptr_victim_block->list_pages[loop_page].page_status = 1;
+//			ptr_victim_block->nr_free_pages++;
+//
+//		}
+//	}
 
 
 /* If you want execute wear-leving */

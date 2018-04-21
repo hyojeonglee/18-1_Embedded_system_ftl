@@ -4,6 +4,10 @@
 #define PAGE_TABLE_FREE	 -1
 
 
+#define NOT_RESERVED 0
+#define RESERVED 1
+
+
 extern struct ftl_base_t ftl_base_page_mapping;
 
 struct ftl_page_mapping_context_t {
