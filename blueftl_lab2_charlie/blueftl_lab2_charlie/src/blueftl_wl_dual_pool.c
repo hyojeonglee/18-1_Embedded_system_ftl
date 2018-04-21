@@ -60,7 +60,7 @@ void check_max_min_nr_erase_cnt(struct ftl_context_t *ptr_ftl_context){
 
 	ptr_ftl_context->max_erase_cnt = max_erase_cnt;
 	ptr_ftl_context->min_erase_cnt = min_erase_cnt;
-	printf("max_erase_cnt %d  min_erase_cnt %d\n",max_erase_cnt, min_erase_cnt);
+//	printf("max_erase_cnt %d  min_erase_cnt %d\n",max_erase_cnt, min_erase_cnt);
 	/* TODO: 위 부분은 dual pool 실행 전에 확인하는 코드. 어디에 쓸 수 있을까? */
 }
 
@@ -96,7 +96,7 @@ uint32_t check_hot_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
 	find_max_ec_pool_block_info(ptr_ftl_context, HOT_POOL);
 	find_min_ec_pool_block_info(ptr_ftl_context, HOT_POOL);
 #endif
-	if (g_max_rec_in_hot_pool.nr_erase_cnt - g_min_rec_in_hot_pool.nr_erase_cnt > 2 * WEAR_LEVELING_THRESHOLD)
+	if (g_max_ec_in_hot_pool.nr_erase_cnt - g_min_ec_in_hot_pool.nr_erase_cnt > 2 * WEAR_LEVELING_THRESHOLD)
 		return TRUE;
 	else
 		return FALSE;
@@ -107,9 +107,9 @@ void hot_pool_adjustment(struct ftl_context_t *ptr_ftl_context) {
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 	struct flash_block_t* ptr_min_ec_block;
 
-	uint32_t no_bus = g_min_rec_in_hot_pool.no_bus;
-	uint32_t no_chip = g_min_rec_in_hot_pool.no_chip;
-	uint32_t no_block = g_min_rec_in_hot_pool.no_block;
+	uint32_t no_bus = g_min_ec_in_hot_pool.no_bus;
+	uint32_t no_chip = g_min_ec_in_hot_pool.no_chip;
+	uint32_t no_block = g_min_ec_in_hot_pool.no_block;
 
 
 	ptr_min_ec_block = &ptr_ssd->list_buses[no_bus].list_chips[no_chip].list_blocks[no_block];
@@ -135,6 +135,115 @@ struct flash_block_t *get_min_max_ptr(struct ftl_context_t *ptr_ftl_context, dua
 }
 
 struct flash_block_t *get_erase_blk_ptr(struct ftl_context_t *ptr_ftl_context, uint32_t target_bus, uint32_t target_chip, uint32_t target_block){
+}
+
+uint32_t block_swap(struct flash_block_t *src_block, struct flash_block_t *dest_block, struct ftl_context_t *ptr_ftl_context)
+{
+/*
+ *	swap the valid pages in hottest block and coldest block
+ * */
+	uint32_t loop_page = 0;
+	uint32_t src_valid_page_cnt = 0;
+	uint32_t dest_valid_page_cnt = 0;
+
+	struct flash_ssd_t *ptr_ssd = ptr_ftl_context->ptr_ssd;
+	struct virtual_device_t* ptr_vdevice = ptr_ftl_context->ptr_vdevice;
+	struct ftl_page_mapping_context_t* ptr_pg_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
+	int32_t src_logical_page_addr[1024]={-1,};
+	int32_t dest_logical_page_addr[1024]={-1,};
+
+	char *src_block_buff = NULL;
+	char *src_page_buff = NULL;
+	char *dest_block_buff = NULL;
+	char *dest_page_buff = NULL;
+
+	if((src_block_buff = (char *)malloc(ptr_ftl_context->ptr_vdevice->page_main_size * ptr_ssd->nr_pages_per_block))== NULL) {
+		printf("blueftl_wl_dual_pool: the malloc for the buffer failed\n");
+		return -1;
+	}
+
+	memset(src_block_buff, 0xFF, ptr_ssd->nr_pages_per_block * ptr_vdevice->page_main_size);
+
+	if((dest_block_buff = (char *)malloc(ptr_ftl_context->ptr_vdevice->page_main_size * ptr_ssd->nr_pages_per_block))== NULL) {
+		printf("blueftl_wl_dual_pool: the malloc for the buffer failed\n");
+		return -1;
+	}
+
+	memset(dest_block_buff, 0xFF, ptr_ssd->nr_pages_per_block * ptr_vdevice->page_main_size);
+
+	/*step 1. read all the vailid page from src block*/
+	for(loop_page = 0; loop_page < ptr_ssd->nr_pages_per_block; loop_page++) {
+		if(src_block->list_pages[loop_page].page_status == PAGE_STATUS_VALID) {
+			src_page_buff = src_block_buff + (loop_page * ptr_vdevice->page_main_size);
+			blueftl_user_vdevice_page_read(
+				ptr_ftl_context->ptr_vdevice,
+				src_block->no_bus,
+				src_block->no_chip,
+				src_block->no_block,
+				loop_page,
+				ptr_ftl_context->ptr_vdevice->page_main_size,
+				(char *)src_page_buff);
+			src_logical_page_addr[src_valid_page_cnt]=src_block->list_pages[loop_page].no_logical_page_addr;
+			src_valid_page_cnt++;
+		}
+	}
+
+	/*step 2. free srouce block*/
+	page_clean_in_block(src_block, ptr_ftl_context);
+
+	/*step 3. read valid pages in dest block to another buffer*/
+
+	for(loop_page = 0; loop_page < ptr_ssd->nr_pages_per_block; loop_page++) {
+		if(dest_block->list_pages[loop_page].page_status == PAGE_STATUS_VALID) {
+			dest_page_buff = dest_block_buff + (loop_page * ptr_vdevice->page_main_size);
+			blueftl_user_vdevice_page_read(
+				ptr_ftl_context->ptr_vdevice,
+				dest_block->no_bus,
+				dest_block->no_chip,
+				dest_block->no_block,
+				loop_page,
+				ptr_ftl_context->ptr_vdevice->page_main_size,
+				(char *)dest_page_buff);
+			dest_logical_page_addr[dest_valid_page_cnt]=dest_block->list_pages[loop_page].no_logical_page_addr;
+			dest_valid_page_cnt++;
+		}
+	}
+
+
+	/*step 4. free dest block*/
+	page_clean_in_block(dest_block, ptr_ftl_context);
+
+	/*step 5 write contents in src_block_buffer to dest block*/
+	for(loop_page = 0; loop_page < src_valid_page_cnt; loop_page++) {
+			blueftl_user_vdevice_page_write (
+					ptr_vdevice,
+					dest_block->no_bus,
+					dest_block->no_chip,
+					dest_block->no_block,
+					loop_page,
+					ptr_ftl_context->ptr_vdevice->page_main_size,
+					(char *)src_page_buff);
+			dest_block->list_pages[loop_page].page_status = PAGE_STATUS_VALID;
+			dest_block->nr_free_pages--;
+			dest_block->nr_valid_pages++;
+			ptr_pg_mapping->ptr_pg_table[src_logical_page_addr[loop_page]]= ftl_convert_to_physical_page_address(dest_block->no_bus, dest_block->no_chip, dest_block->no_block, loop_page);
+	}
+
+	/*step 6 write contents in dest_block_buffer to src block*/
+	for(loop_page = 0; loop_page < dest_valid_page_cnt; loop_page++) {
+			blueftl_user_vdevice_page_write (
+					ptr_vdevice,
+					src_block->no_bus,
+					src_block->no_chip,
+					src_block->no_block,
+					loop_page,
+					ptr_ftl_context->ptr_vdevice->page_main_size,
+					(char *)dest_page_buff);
+			src_block->list_pages[loop_page].page_status = PAGE_STATUS_VALID;
+			src_block->nr_free_pages--;
+			src_block->nr_valid_pages++;
+			ptr_pg_mapping->ptr_pg_table[dest_logical_page_addr[loop_page]]= ftl_convert_to_physical_page_address(src_block->no_bus, src_block->no_chip, src_block->no_block, loop_page);
+	}
 }
 
 uint32_t block_copy(struct flash_block_t *src_block, struct flash_block_t *dest_block, struct ftl_context_t *ptr_ftl_context){
@@ -212,7 +321,7 @@ uint32_t page_clean_in_block(struct flash_block_t *ptr_erase_block,  struct ftl_
 	for(i = 0; i < ptr_ssd->nr_pages_per_block; i++ ){
 		ptr_erase_block->list_pages[i].no_logical_page_addr = -1;
 		ptr_erase_block->list_pages[i].page_status = PAGE_STATUS_FREE;
-		}
+	}
 }
 
 /* 1. cold data migration */
@@ -237,13 +346,21 @@ void cold_data_migration(struct ftl_context_t* ptr_ftl_context){
 	ptr_oldest_block_in_hot_pool = &ptr_ssd->list_buses[g_max_ec_in_hot_pool.no_bus].list_chips[g_max_ec_in_hot_pool.no_chip].list_blocks[g_max_ec_in_hot_pool.no_block];
 	ptr_youngest_block_in_cold_pool = &ptr_ssd->list_buses[g_min_ec_in_cold_pool.no_bus].list_chips[g_min_ec_in_cold_pool.no_chip].list_blocks[g_min_ec_in_cold_pool.no_block];
 //	ptr_tgt_block = &ptr_ssd->list_buses[0].list_chips[0].list_blocks[target]; /* TODO: how to choose target block for oldest data */
-	
+
+#if 0
 	block_copy(ptr_oldest_block_in_hot_pool, ptr_tgt_block, ptr_ftl_context);
 	page_clean_in_block(ptr_oldest_block_in_hot_pool, ptr_ftl_context);
 	block_copy(ptr_youngest_block_in_cold_pool, ptr_oldest_block_in_hot_pool, ptr_ftl_context);
 	page_clean_in_block(ptr_youngest_block_in_cold_pool, ptr_ftl_context);
+#endif
+	//swap valid pages of each block to another
+	block_swap(ptr_oldest_block_in_hot_pool, ptr_youngest_block_in_cold_pool, ptr_ftl_context);
 	// change status variables (swap)
 	// and initialize EEC of new cold block (include hot data)
+	
+	ptr_oldest_block_in_hot_pool->hot_cold_pool = 0; //move to cold pool
+	ptr_youngest_block_in_cold_pool->hot_cold_pool = 1;// move to hot pool
+	ptr_oldest_block_in_hot_pool->nr_recent_erase_cnt = 0;//rest eec to be 0
 }
 
 void insert_pool(struct ftl_context_t* ptr_ftl_context, struct flash_block_t* ptr_erase_block){
