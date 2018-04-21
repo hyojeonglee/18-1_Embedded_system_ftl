@@ -125,7 +125,6 @@ int32_t gc_page_trigger_gc_lab (
 	if (check_hot_pool_adjustment(ptr_ftl_context) == TRUE)
 		hot_pool_adjustment(ptr_ftl_context);
 
-
 	/* end */
 #endif	
 	return ret;

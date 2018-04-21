@@ -93,6 +93,11 @@ void perf_wl_inc_blk_erasures (void)
 	_perf_wl_nr_blk_erasures++;
 }
 
+void perf_wl_set_blk_max_erasures(int32_t cnt)
+{
+	_perf_wl_nr_maximum_erasures = cnt;
+}
+
 void perf_display_results (void)
 {
 	printf ("bluessd: ==========================Performance summary========================\n");

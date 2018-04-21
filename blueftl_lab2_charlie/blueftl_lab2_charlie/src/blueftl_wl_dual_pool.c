@@ -60,6 +60,7 @@ void check_max_min_nr_erase_cnt(struct ftl_context_t *ptr_ftl_context){
 
 	ptr_ftl_context->max_erase_cnt = max_erase_cnt;
 	ptr_ftl_context->min_erase_cnt = min_erase_cnt;
+	perf_wl_set_blk_max_erasures(max_erase_cnt);
 //	printf("max_erase_cnt %d  min_erase_cnt %d\n",max_erase_cnt, min_erase_cnt);
 	/* TODO: 위 부분은 dual pool 실행 전에 확인하는 코드. 어디에 쓸 수 있을까? */
 }
@@ -183,6 +184,7 @@ uint32_t block_swap(struct flash_block_t *src_block, struct flash_block_t *dest_
 				loop_page,
 				ptr_ftl_context->ptr_vdevice->page_main_size,
 				(char *)src_page_buff);
+			perf_wl_inc_page_copies();
 			src_logical_page_addr[src_valid_page_cnt]=src_block->list_pages[loop_page].no_logical_page_addr;
 			src_valid_page_cnt++;
 		}
@@ -190,6 +192,7 @@ uint32_t block_swap(struct flash_block_t *src_block, struct flash_block_t *dest_
 
 	/*step 2. free srouce block*/
 	page_clean_in_block(src_block, ptr_ftl_context);
+	perf_wl_inc_blk_erasures();
 
 	/*step 3. read valid pages in dest block to another buffer*/
 
@@ -206,12 +209,14 @@ uint32_t block_swap(struct flash_block_t *src_block, struct flash_block_t *dest_
 				(char *)dest_page_buff);
 			dest_logical_page_addr[dest_valid_page_cnt]=dest_block->list_pages[loop_page].no_logical_page_addr;
 			dest_valid_page_cnt++;
+			perf_wl_inc_page_copies();
 		}
 	}
 
 
 	/*step 4. free dest block*/
 	page_clean_in_block(dest_block, ptr_ftl_context);
+	perf_wl_inc_blk_erasures();
 
 	/*step 5 write contents in src_block_buffer to dest block*/
 	for(loop_page = 0; loop_page < src_valid_page_cnt; loop_page++) {
@@ -648,7 +653,7 @@ uint32_t update_max_min_nr_erase_cnt_in_pool( struct ftl_context_t *ptr_ftl_cont
 	update_erase_cnt_in_each_pool(&g_max_rec_in_cold_pool, max_rec_in_cold);
 	update_erase_cnt_in_each_pool(&g_min_ec_in_cold_pool, min_ec_in_cold);
 	update_erase_cnt_in_each_pool(&g_min_rec_in_cold_pool, min_rec_in_cold);
-
+#if 0
 	printf("g_max_ec_in_cold_pool %d, erase_cnt %d\n", g_max_ec_in_cold_pool.no_block, g_max_ec_in_cold_pool.nr_erase_cnt);
 	printf("g_max_rec_in_cold_pool %d, erase_cnt %d\n", g_max_rec_in_cold_pool.no_block, g_max_rec_in_cold_pool.nr_erase_cnt);
 	printf("g_min_ec_in_cold_pool %d, erase_cnt %d\n", g_min_ec_in_cold_pool.no_block, g_min_ec_in_cold_pool.nr_erase_cnt);
@@ -659,7 +664,7 @@ uint32_t update_max_min_nr_erase_cnt_in_pool( struct ftl_context_t *ptr_ftl_cont
 	printf("g_max_rec_in_hot_pool %d, erase_cnt %d\n", g_max_rec_in_hot_pool.no_block, g_max_rec_in_hot_pool.nr_erase_cnt);
 	printf("g_min_ec_in_hot_pool %d, erase_cnt %d\n", g_min_ec_in_hot_pool.no_block, g_min_ec_in_hot_pool.nr_erase_cnt);
 	printf("g_min_rec_in_hot_pool %d, erase_cnt %d\n", g_min_rec_in_hot_pool.no_block, g_min_rec_in_hot_pool.nr_erase_cnt);
-
+#endif
 	return 0;
 }
 
