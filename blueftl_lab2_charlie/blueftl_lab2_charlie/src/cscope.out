@@ -1,4 +1,4 @@
-cscope 15 /home/ssd/embedded_ftl/blueftl_lab2_charlie/blueftl_lab2_hj/src               0000407495
+cscope 15 /home/ssd/embedded_ftl/blueftl_lab2_charlie/blueftl_lab2_charlie/src               0000407501
 	@blueftl_char.h
 
 1 #iâdeà
@@ -8259,7 +8259,7 @@ a
 
 39 
 	s_block_šfo_node
-{
+ {
 
 40 
 ušt32_t
