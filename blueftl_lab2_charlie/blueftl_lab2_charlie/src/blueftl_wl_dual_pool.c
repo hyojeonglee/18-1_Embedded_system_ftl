@@ -60,6 +60,7 @@ void check_max_min_nr_erase_cnt(struct ftl_context_t *ptr_ftl_context){
 
 	ptr_ftl_context->max_erase_cnt = max_erase_cnt;
 	ptr_ftl_context->min_erase_cnt = min_erase_cnt;
+	printf("max_erase_cnt %d  min_erase_cnt %d\n",max_erase_cnt, min_erase_cnt);
 	/* TODO: 위 부분은 dual pool 실행 전에 확인하는 코드. 어디에 쓸 수 있을까? */
 }
 
@@ -79,9 +80,9 @@ void cold_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 	struct flash_block_t* ptr_max_rec_block;
 
-	uint32_t no_bus = g_min_rec_in_hot_pool.no_bus;
-	uint32_t no_chip = g_min_rec_in_hot_pool.no_chip;
-	uint32_t no_block = g_min_rec_in_hot_pool.no_block;
+	uint32_t no_bus = g_min_rec_in_cold_pool.no_bus;
+	uint32_t no_chip = g_min_rec_in_cold_pool.no_chip;
+	uint32_t no_block = g_min_rec_in_cold_pool.no_block;
 
 	ptr_max_rec_block = &ptr_ssd->list_buses[no_bus].list_chips[no_chip].list_blocks[no_block];
 
@@ -436,7 +437,7 @@ void update_erase_cnt_in_each_pool(dual_pool_block_info *info, struct flash_bloc
 		info->no_bus = ptr_target_block->no_bus;
 		info->no_chip = ptr_target_block->no_chip;
 		info->no_block = ptr_target_block->no_block;
-		info->nr_erase_cnt = 0;
+		info->nr_erase_cnt = ptr_target_block->nr_erase_cnt;
 	}
 }
 
@@ -446,7 +447,7 @@ uint32_t update_max_min_nr_erase_cnt_in_pool( struct ftl_context_t *ptr_ftl_cont
 
 	uint32_t nr_bus = ptr_target_ssd->nr_buses;
 	uint32_t nr_chip = ptr_target_ssd->nr_chips_per_bus;
-	uint32_t nr_block = ptr_target_ssd->nr_buses;
+	uint32_t nr_block = ptr_target_ssd->nr_blocks_per_chip;
 
 	uint32_t i, j, k;
 
@@ -460,35 +461,59 @@ uint32_t update_max_min_nr_erase_cnt_in_pool( struct ftl_context_t *ptr_ftl_cont
 	struct flash_block_t *max_rec_in_cold = NULL;
 	struct flash_block_t *min_rec_in_cold = NULL;
 
+	uint32_t max_ec_value_in_hot = 0;
+	uint32_t min_ec_value_in_hot = 99999;
+	uint32_t max_rec_value_in_hot = 0;
+	uint32_t min_rec_value_in_hot = 99999;
+
+	uint32_t max_ec_value_in_cold = 0;
+	uint32_t min_ec_value_in_cold = 99999;
+	uint32_t max_rec_value_in_cold = 0;
+	uint32_t min_rec_value_in_cold = 99999;
+
 	for(i = 0; i < nr_bus; i++) {
 		for(j = 0; j < nr_chip; j++) {
 			for(k = 0; k < nr_block; k++) {
 				ptr_target_block = &(ptr_target_ssd->list_buses[i].list_chips[j].list_blocks[k]);
 				if(ptr_target_block->hot_cold_pool == HOT_POOL) {
-					if(max_ec_in_hot == NULL) {
-						max_ec_in_hot = max_rec_in_hot = min_ec_in_hot = min_rec_in_hot = ptr_target_block;
-					}
-					if(max_ec_in_hot->nr_erase_cnt < ptr_target_block->nr_erase_cnt)
+					if(max_ec_value_in_hot < ptr_target_block->nr_erase_cnt){
+						max_ec_value_in_hot = ptr_target_block->nr_erase_cnt;
 						max_ec_in_hot = ptr_target_block;
-					if(max_rec_in_hot->nr_erase_cnt < ptr_target_block->nr_erase_cnt)
+					}	
+					if(max_rec_value_in_hot < ptr_target_block->nr_erase_cnt){
+						max_rec_value_in_hot = ptr_target_block->nr_erase_cnt;
 						max_rec_in_hot = ptr_target_block;
-					if(min_ec_in_hot->nr_erase_cnt >= ptr_target_block->nr_erase_cnt)
+					}
+					if(min_ec_value_in_hot >= ptr_target_block->nr_erase_cnt) {
+						min_ec_value_in_hot = ptr_target_block->nr_erase_cnt;
 						min_ec_in_hot = ptr_target_block;
-					if(min_rec_in_hot->nr_erase_cnt >= ptr_target_block->nr_erase_cnt)
+					}
+					if(min_rec_value_in_hot >= ptr_target_block->nr_erase_cnt){
+						min_rec_value_in_hot = ptr_target_block->nr_erase_cnt;
 						min_rec_in_hot = ptr_target_block;
+					}
 
 				} else if(ptr_target_block->hot_cold_pool == COLD_POOL){
-					if(max_ec_in_cold == NULL) {
-						max_ec_in_cold = max_rec_in_cold = min_ec_in_cold = min_rec_in_cold = ptr_target_block;
-					}
-					if(max_ec_in_cold->nr_erase_cnt < ptr_target_block->nr_erase_cnt)
+					if(max_ec_value_in_cold < ptr_target_block->nr_erase_cnt){
+						max_ec_value_in_cold = ptr_target_block->nr_erase_cnt;
 						max_ec_in_cold = ptr_target_block;
-					if(max_rec_in_cold->nr_erase_cnt < ptr_target_block->nr_erase_cnt)
+				//		printf("max_ec_count %d at block %d\n", max_ec_value_in_cold, ptr_target_block->no_block);
+					}	
+					if(max_rec_value_in_cold < ptr_target_block->nr_erase_cnt){
+						max_rec_value_in_cold = ptr_target_block->nr_erase_cnt;
 						max_rec_in_cold = ptr_target_block;
-					if(min_ec_in_cold->nr_erase_cnt >= ptr_target_block->nr_erase_cnt)
+				//		printf("max_rec_count %d at block %d\n", max_rec_value_in_cold, ptr_target_block->no_block);
+					}
+					if(min_ec_value_in_cold >= ptr_target_block->nr_erase_cnt) {
+						min_ec_value_in_cold = ptr_target_block->nr_erase_cnt;
 						min_ec_in_cold = ptr_target_block;
-					if(min_rec_in_cold->nr_erase_cnt >= ptr_target_block->nr_erase_cnt)
+				//		printf("min_ec_count %d at block %d\n", min_ec_value_in_cold, ptr_target_block->no_block);
+					}
+					if(min_rec_value_in_cold >= ptr_target_block->nr_erase_cnt){
+						min_rec_value_in_cold = ptr_target_block->nr_erase_cnt;
 						min_rec_in_cold = ptr_target_block;
+				//		printf("min_rec_count %d at block %d\n", min_rec_value_in_cold, ptr_target_block->no_block);
+					}
 				}else {
 					printf("error ");
 					return 1;
