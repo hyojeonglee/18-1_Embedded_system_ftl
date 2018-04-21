@@ -161,7 +161,7 @@ void cold_data_migration(struct ftl_context_t* ptr_ftl_context){
 	}
 	memset (ptr_block_buff, 0xFF, ptr_ssd->nr_pages_per_block * ptr_vdevice->page_main_size);
 	
-	for (i = 0; i < FLASH_PAGE_SIZE; i++) {
+	for (i = 0; i < ptr_ssd->nr_pages_per_block; i++) {
 		if (ptr_youngest_block->list_pages[i].page_status == 3) {
 			ptr_page_buff = ptr_block_buff + (i * ptr_vdevice->page_main_size);
 

@@ -207,6 +207,8 @@ uint32_t block_swap(struct flash_block_t *src_block, struct flash_block_t *dest_
 			src_block->nr_valid_pages++;
 			ptr_pg_mapping->ptr_pg_table[dest_logical_page_addr[loop_page]]= ftl_convert_to_physical_page_address(src_block->no_bus, src_block->no_chip, src_block->no_block, loop_page);
 	}
+
+	return 0;
 }
 
 uint32_t block_copy(struct flash_block_t *src_block, struct flash_block_t *dest_block, struct ftl_context_t *ptr_ftl_context){
@@ -263,6 +265,8 @@ uint32_t block_copy(struct flash_block_t *src_block, struct flash_block_t *dest_
 
 	}
 	free(buff);
+
+	return 0;
 }
 
 uint32_t page_clean_in_block(struct flash_block_t *ptr_erase_block,  struct ftl_context_t *ptr_ftl_context){
@@ -284,6 +288,8 @@ uint32_t page_clean_in_block(struct flash_block_t *ptr_erase_block,  struct ftl_
 		ptr_erase_block->list_pages[i].no_logical_page_addr = -1;
 		ptr_erase_block->list_pages[i].page_status = PAGE_STATUS_FREE;
 	}
+
+	return 0;
 }
 
 /* 1. cold data migration */
@@ -408,16 +414,16 @@ uint32_t update_max_min_nr_erase_cnt_in_pool( struct ftl_context_t *ptr_ftl_cont
 	update_erase_cnt_in_each_pool(&g_min_ec_in_cold_pool, min_ec_in_cold);
 	update_erase_cnt_in_each_pool(&g_min_rec_in_cold_pool, min_rec_in_cold);
 
-	printf("g_max_ec_in_cold_pool %d, erase_cnt %d\n", g_max_ec_in_cold_pool.no_block, g_max_ec_in_cold_pool.nr_erase_cnt);
-	printf("g_max_rec_in_cold_pool %d, erase_cnt %d\n", g_max_rec_in_cold_pool.no_block, g_max_rec_in_cold_pool.nr_erase_cnt);
-	printf("g_min_ec_in_cold_pool %d, erase_cnt %d\n", g_min_ec_in_cold_pool.no_block, g_min_ec_in_cold_pool.nr_erase_cnt);
-	printf("g_min_rec_in_cold_pool %d, erase_cnt %d\n", g_min_rec_in_cold_pool.no_block, g_min_rec_in_cold_pool.nr_erase_cnt);
+	// printf("g_max_ec_in_cold_pool %d, erase_cnt %d\n", g_max_ec_in_cold_pool.no_block, g_max_ec_in_cold_pool.nr_erase_cnt);
+	// printf("g_max_rec_in_cold_pool %d, erase_cnt %d\n", g_max_rec_in_cold_pool.no_block, g_max_rec_in_cold_pool.nr_erase_cnt);
+	// printf("g_min_ec_in_cold_pool %d, erase_cnt %d\n", g_min_ec_in_cold_pool.no_block, g_min_ec_in_cold_pool.nr_erase_cnt);
+	// printf("g_min_rec_in_cold_pool %d, erase_cnt %d\n", g_min_rec_in_cold_pool.no_block, g_min_rec_in_cold_pool.nr_erase_cnt);
 
 	
-	printf("g_max_ec_in_hot_pool %d, erase_cnt %d\n", g_max_ec_in_hot_pool.no_block, g_max_ec_in_hot_pool.nr_erase_cnt);
-	printf("g_max_rec_in_hot_pool %d, erase_cnt %d\n", g_max_rec_in_hot_pool.no_block, g_max_rec_in_hot_pool.nr_erase_cnt);
-	printf("g_min_ec_in_hot_pool %d, erase_cnt %d\n", g_min_ec_in_hot_pool.no_block, g_min_ec_in_hot_pool.nr_erase_cnt);
-	printf("g_min_rec_in_hot_pool %d, erase_cnt %d\n", g_min_rec_in_hot_pool.no_block, g_min_rec_in_hot_pool.nr_erase_cnt);
+	// printf("g_max_ec_in_hot_pool %d, erase_cnt %d\n", g_max_ec_in_hot_pool.no_block, g_max_ec_in_hot_pool.nr_erase_cnt);
+	// printf("g_max_rec_in_hot_pool %d, erase_cnt %d\n", g_max_rec_in_hot_pool.no_block, g_max_rec_in_hot_pool.nr_erase_cnt);
+	// printf("g_min_ec_in_hot_pool %d, erase_cnt %d\n", g_min_ec_in_hot_pool.no_block, g_min_ec_in_hot_pool.nr_erase_cnt);
+	// printf("g_min_rec_in_hot_pool %d, erase_cnt %d\n", g_min_rec_in_hot_pool.no_block, g_min_rec_in_hot_pool.nr_erase_cnt);
 
 	return 0;
 }

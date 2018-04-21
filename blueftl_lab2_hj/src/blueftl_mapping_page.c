@@ -30,9 +30,7 @@ struct ftl_base_t ftl_base_page_mapping = {
 	.ftl_get_mapped_physical_page_address = page_mapping_get_mapped_physical_page_address,
 	.ftl_get_free_physical_page_address = page_mapping_get_free_physical_page_address,
 	.ftl_map_logical_to_physical = page_mapping_map_logical_to_physical,
-	.ftl_trigger_gc = gc_page_trigger_gc_lab, // for test greedy policy
-	//.ftl_trigger_gc = gc_page_trigger_option, // with gc option
-	// .ftl_trigger_gc = NULL, // for test
+	.ftl_trigger_gc = gc_page_trigger_gc_lab,
 	.ftl_trigger_merge = NULL,
 	.ftl_trigger_wear_leveler = NULL,
 };

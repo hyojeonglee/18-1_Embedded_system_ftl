@@ -22,6 +22,7 @@
 #include "blueftl_ftl_base.h"
 #include "blueftl_ssdmgmt.h"
 #include "blueftl_util.h"
+#include "blueftl_wl_dual_pool.h"
 
 #endif
 
@@ -105,7 +106,7 @@ void perf_wl_log_blk_erasures(struct ftl_context_t* ptr_ftl_context)
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 	int i;
 	FILE *fp;
-	char index[1000], access[1000];
+	char index[100], access[100];
 	char *line = NULL;
 	char *file_path = "log";
 	struct flash_block_t* ptr_block;

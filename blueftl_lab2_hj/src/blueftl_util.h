@@ -2,6 +2,7 @@
 #define _BLUESSD_UTIL
 
 #include <fcntl.h>
+#include "blueftl_ftl_base.h"
 
 #if !defined( min )
 # define min(a,b) (a<b?a:b)
@@ -26,5 +27,10 @@ void perf_inc_blk_erasures (void);
 void perf_gc_inc_page_copies (void);
 void perf_gc_inc_blk_erasures (void);
 void perf_display_results (void);
+
+void perf_wl_set_blk_max_erasures (int32_t cnt);
+void perf_wl_log_blk_erasures (struct ftl_context_t* ptr_ftl_context);
+void perf_wl_inc_page_copies (void);
+void perf_wl_inc_blk_erasures (void);
 
 #endif
