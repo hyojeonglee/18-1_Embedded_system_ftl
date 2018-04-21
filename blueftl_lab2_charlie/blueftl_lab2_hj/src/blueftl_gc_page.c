@@ -38,9 +38,7 @@ int32_t gc_page_trigger_gc_lab (
 	uint8_t* ptr_block_buff = NULL;
 	uint32_t loop_page = 0;
 
-	int32_t ret = 0;
-
-	/* TODO: Greedy Policy */
+	int32_t ret = 0; /* TODO: Greedy Policy */
 	
 	uint32_t k;
 	struct flash_block_t* ptr_erase_block;
