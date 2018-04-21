@@ -30,6 +30,10 @@ struct ftl_context_t {
 	int32_t latest_bus;
 	int32_t latest_chip;
 	int32_t latest_block;
+	/*add by charlie*/
+	int32_t max_erase_cnt;
+	int32_t min_erase_cnt;
+
 };
 
 struct ftl_base_t {

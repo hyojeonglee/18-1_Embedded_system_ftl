@@ -20,8 +20,8 @@
 #define MAX 			     0
 #define MIN  				 1 
 
-#define HOT_POOL 			 0
-#define COLD_POOL 			 1
+#define HOT_POOL 			 1
+#define COLD_POOL 			 0
 #define HOT_REC_POOL 		 2
 #define COLD_REC_POOL 		 3
 
@@ -36,19 +36,20 @@
 #define 	INIT_CHAR_VAL 			0xFF
 #define NUM_OF_POOL 		4
 
-typedef struct _block_info_node{
+typedef struct _block_info_node {
 	uint32_t 			no_block;
 	uint32_t 			no_chip;
 	uint32_t 			no_bus;
 	uint32_t    		nr_erase_cnt;
 } dual_pool_block_info;
 
+#if 1
 struct ftl_wl_t {
 	void (* cold_data_migration) (struct ftl_context_t* ptr_ftl_context_t);
-	uint32_t (* check_cold_data_migration) (struct ftl_context_t* ptr_ftl_context_t);
+	uint32_t (* check_cold_data_migration) (void);
 	uint32_t (* update_max_min_nr_erase_cnt_in_pool) ( int pool, int type, int min_max, int bus, int chip, int block, uint32_t erasure_count);
-	uint32_t (* check_cold_pool_adjustment) (struct ftl_context_t* ptr_ftl_context_t);
-	uint32_t (* check_hot_pool_adjustment)(struct ftl_context_t* ptr_ftl_context_t);
+	uint32_t (* check_cold_pool_adjustment) (void);
+	uint32_t (* check_hot_pool_adjustment)(void);
 	void (* cold_pool_adjustment) (struct ftl_context_t *ptr_ftl_context_t);
 	void (* hot_pool_adjustment) (struct ftl_context_t *ptr_ftl_context_t);
 	void (* insert_pool)(struct ftl_context_t* ptr_ftl_context_t, struct flash_block_t* ptr_erase_block); 
@@ -57,11 +58,13 @@ struct ftl_wl_t {
 	struct flash_block_t * (* get_erase_blk_ptr)(struct ftl_context_t *ptr_ftl_context, uint32_t target_bus, uint32_t target_chip, uint32_t target_block);
 	uint32_t (* block_copy) (struct flash_block_t *ptr_src_block, struct flash_block_t *ptr_tgt_block, struct ftl_context_t *ptr_ftl_context);
 };
+#endif
 
 void check_max_min_nr_erase_cnt(struct ftl_context_t *ptr_ftl_context);
+/* void check_max_min_nr_erase_cnt(struct ftl_context_t *ptr_ftl_context, struct flash_block_t* ptr_erase_block); */
 uint32_t check_cold_data_migration(struct ftl_context_t *ptr_ftl_context);
 void cold_data_migration(struct ftl_context_t* ptr_ftl_context_t);
-uint32_t update_max_min_nr_erase_cnt_in_pool( int pool, int type, int min_max, int bus, int chip, int block, uint32_t erasure_count);
+uint32_t update_max_min_nr_erase_cnt_in_pool( struct ftl_context_t *ptr_ftl_context);
 uint32_t check_cold_pool_adjustment(struct ftl_context_t *ptr_ftl_context);
 uint32_t check_hot_pool_adjustment(struct ftl_context_t *ptr_ftl_context);
 void cold_pool_adjustment(struct ftl_context_t *ptr_ftl_context_t);
