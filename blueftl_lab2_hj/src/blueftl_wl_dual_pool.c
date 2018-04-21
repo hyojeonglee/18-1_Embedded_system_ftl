@@ -1,12 +1,12 @@
 
 /* This is just a sample blueftl_wearleveling_dualpool code for lab 2*/
 
-#include <linux/module.h> 
 #include <err.h>
+#include <stdbool.h>
 #include "blueftl_ftl_base.h"
 #include "blueftl_user_ftl_main.h"
 #include "blueftl_ssdmgmt.h"
-#include "bluessd_user_vdevice.h"
+#include "blueftl_user_vdevice.h"
 #include "blueftl_mapping_page.h"
 #include "blueftl_util.h"
 #include "blueftl_wl_dual_pool.h" 
@@ -36,7 +36,7 @@ void check_max_min_nr_erase_cnt(struct ftl_context_t *ptr_ftl_context){
 	uint32_t min_erase_cnt = 99999;
 
 	for (i = 0; i < ptr_ssd->nr_blocks_per_chip; i++) {
-		ptr_erase_block = &ptr_ssd->list_buses[0].list_chips[0].list_blocks[k]; /* size of bus and chip: 1 */
+		ptr_erase_block = &ptr_ssd->list_buses[0].list_chips[0].list_blocks[i]; /* size of bus and chip: 1 */
 		uint32_t curr_cnt = ptr_erase_block->nr_erase_cnt;
 
 		if (max_erase_cnt < curr_cnt)
@@ -48,7 +48,7 @@ void check_max_min_nr_erase_cnt(struct ftl_context_t *ptr_ftl_context){
 }
 
 /* 2. cold pool adjustment */
-bool check_cold_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
+uint32_t check_cold_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
 	find_max_rec_pool_block_info(ptr_ftl_context, COLD_POOL);
 	find_min_rec_pool_block_info(ptr_ftl_context, HOT_POOL);
 
@@ -67,7 +67,7 @@ void cold_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
 }
 
 /* 3. hot pool adjustment */
-bool check_hot_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
+uint32_t check_hot_pool_adjustment(struct ftl_context_t *ptr_ftl_context){
 	find_max_ec_pool_block_info(ptr_ftl_context, HOT_POOL);
 	find_min_ec_pool_block_info(ptr_ftl_context, HOT_POOL);
 
@@ -87,7 +87,7 @@ void hot_pool_adjustment(struct ftl_context_t *ptr_ftl_context) {
 }
 
 /* 1. cold data migration */
-bool check_cold_data_migration(struct ftl_context_t *ptr_ftl_context){
+uint32_t check_cold_data_migration(struct ftl_context_t *ptr_ftl_context){
 	find_max_ec_pool_block_info(ptr_ftl_context, HOT_POOL);
 	find_min_ec_pool_block_info(ptr_ftl_context, COLD_POOL);
 
@@ -98,25 +98,42 @@ bool check_cold_data_migration(struct ftl_context_t *ptr_ftl_context){
 }
 
 /* TODO: how to control dual_pool_block_info struct ? */
-struct flash_block_t *get_min_max_ptr(struct ftl_context_t *ptr_ftl_context, dual_pool_block_info *pool_info){
+
+uint32_t block_copy(struct flash_block_t *ptr_src_block, struct flash_block_t *ptr_tgt_block, struct ftl_context_t *ptr_ftl_context){
+	
 }
 
-struct flash_block_t *get_erase_blk_ptr(struct ftl_context_t *ptr_ftl_context, uint32_t target_bus, uint32_t target_chip, uint32_t target_block){
+uint32_t page_clean_in_block(struct flash_block_t *ptr_block,  struct ftl_context_t *ptr_ftl_context){
+
 }
 
-bool block_copy(struct flash_block_t *ptr_src_block, struct flash_block_t *ptr_tgt_block, struct ftl_context_t *ptr_ftl_context){
-}
+/*
+struct flash_block_t *get_tgt_block(struct ftl_context_t *ptr_ftl_context) {
+	int i;
+	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
+	struct flash_block_t* ptr_erase_block;
+	struct flash_block_t* ptr_tgt_block;
 
-bool page_clean_in_block(struct flash_block_t *ptr_block,  struct ftl_context_t *ptr_ftl_context){
+	for (i = 0; i < ptr_ssd->nr_blocks_per_chip; i++) {
+		ptr_erase_block = &ptr_ssd->list_buses[0].list_chips[0].list_blocks[i];
+		if (ptr_erase_block->hot_cold_pool == HOT_POOL) {
+			// DO SOMETHING
+		}
+	}
+
 }
+*/
 
 /* 1. cold data migration */
 void cold_data_migration(struct ftl_context_t* ptr_ftl_context){
 	/* TODO: it is so waste */
-	uint32_t oldest_in_hot_pool = g_max_ec_pool_block_no;
-	uint32_t youngest_in_cold_pool = g_min_ec_pool_block_no;
-	uint32_t target;
+	uint32_t oldest_in_hot_pool = g_max_ec_in_hot_no;
+	uint32_t youngest_in_cold_pool = g_min_ec_in_cold_no;
 
+	uint8_t* ptr_page_buff = NULL;
+	uint8_t* ptr_block_buff = NULL;
+
+	/* Original */
 	// copy valid pages in oldest to other block (where?)
 	// clear oldest
 	// copy valid pages in youngest to cleared block
@@ -126,19 +143,58 @@ void cold_data_migration(struct ftl_context_t* ptr_ftl_context){
 	
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 	struct flash_block_t* ptr_oldest_block;
-	struct flash block_t* ptr_youngest_block;
-	struct flash block_t* ptr_tgt_block; /* TODO: how to choose ? */
+	struct flash_block_t* ptr_youngest_block;
+	struct flash_block_t* ptr_tgt_block; /* TODO: how to choose ? swap ! */
 
+	int i;
 	ptr_oldest_block = &ptr_ssd->list_buses[0].list_chips[0].list_blocks[oldest_in_hot_pool];
-	ptr_youngest_block = &ptr_ssd->list_buses[0].list_chips[0].list_blocks[youngest_in_cold_pool];
-	ptr_tgt_block = &ptr_ssd->list_buses[0].list_chips[0].list_blocks[target]; /* TODO: how to choose target block for oldest data */
+	ptr_youngest_block = &ptr_ssd->list_buses[0].list_chips[0].list_blocks[youngest_in_cold_pool];	
+
+	/* Other */
+	// cold data to buff and clean youngest block
+	if ((ptr_block_buff = (uint8_t*)mallock (ptr_ssd->nr_pages_per_block * ptr_vdevice->page_main_size)) == NULL) {
+		printf("wl dual pool: the malloc for the buffer failed\n");
+		return -1;
+	}
+	memset (ptr_block_buff, 0xFF, ptr_ssd->nr_pages_per_glock * ptr_vdevice->page_main_size);
 	
-	block_copy(ptr_oldest_block, ptr_tgt_block, ptr_ftl_context);
-	page_clean_in_block(ptr_oldest_block, ptr_ftl_context);
-	block_copy(ptr_youngest_block, ptr_oldest_block, ptr_ftl_context);
-	page_clean_in_block(ptr_youngest_block, ptr_ftl_context);
-	// change status variables (swap)
+	for (i = 0; i < FLASH_PAGE_SIZE; i++) {
+		if (ptr_youngest_block->list_pages[i].page_status == 3) {
+			ptr_page_buff = ptr_block_buff + (i * ptr_vdevice->page_main_size);
+
+			blueftl_user_vdevice_page_read (
+					_ptr_vdevice,
+					0, 0, ptr_youngest_block->no_block, i,
+					ptr_vdevice->page_main_size,
+					(char*)ptr_page_buff);
+		
+			perf_wl_inc_page_copies ();
+		}
+	}
+
+	blueftl_user_vdevice_block_erase (ptr_vdevice, 0, 0, ptr_youngest_block->no_block);
+	ptr_youngest_block->nr_erase_cnt++;
+	perf_wl_inc_blk_erasures ();
+
+	ptr_youngest_block->nr_invalid_pages = 0;
+	ptr_youngest_block->nr_free_pages = 0;
+
+	// hot data to youngest block and clean oldest block
+	for (i = 0; i < ptr_ssd->nr_pages_per_block; i++) {
+		if (ptr_oldest_block->list_pages[i].page_status == 3) {
+			
+		}
+	}
+	
+	// buff to oldest block
+	for (i = 0; i < ptr_ssd->nr_pages_per_block; i++) {
+		
+	}
+	
+	// change status variables
+	
 	// and initialize EEC of new cold block (include hot data)
+	
 }
 
 void insert_pool(struct ftl_context_t* ptr_ftl_context, struct flash_block_t* ptr_erase_block){

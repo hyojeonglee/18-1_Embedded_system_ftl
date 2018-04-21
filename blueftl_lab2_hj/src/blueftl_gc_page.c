@@ -119,7 +119,7 @@ int32_t gc_page_trigger_gc_lab (
 	if (check_cold_data_migration(ptr_ftl_context) == TRUE)
 		cold_data_migration(ptr_ftl_context);
 	if (check_cold_pool_adjustment(ptr_ftl_context) == TRUE)
-		cold_data_adjustment(ptr_ftl_context);
+		cold_pool_adjustment(ptr_ftl_context);
 	if (check_hot_pool_adjustment(ptr_ftl_context) == TRUE)
 		hot_pool_adjustment(ptr_ftl_context);
 	/* end */

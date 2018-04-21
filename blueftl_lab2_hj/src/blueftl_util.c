@@ -20,6 +20,7 @@
 #include "blueftl_ftl_base.h"
 #include "blueftl_ssdmgmt.h"
 #include "blueftl_util.h"
+#include "blueftl_wl_dual_pool.h"
 
 #endif
 
