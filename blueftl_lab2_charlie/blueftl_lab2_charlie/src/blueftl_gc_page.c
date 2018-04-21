@@ -89,7 +89,7 @@ int32_t gc_page_trigger_gc_lab (
 	blueftl_user_vdevice_block_erase (ptr_vdevice, gc_target_bus, gc_target_chip, tmp_target_block);
 	ptr_victim_block->nr_erase_cnt++;	
 	//add by charlie: is this necessary?
-	ptr_victim_block->nr_recent_erase_cnt++;
+//	ptr_victim_block->nr_recent_erase_cnt++;
 	perf_gc_inc_blk_erasures ();
 
 	ptr_victim_block->nr_invalid_pages = 0;
@@ -119,11 +119,11 @@ int32_t gc_page_trigger_gc_lab (
 	check_max_min_nr_erase_cnt(ptr_ftl_context);
 	if (check_cold_data_migration(ptr_ftl_context) == TRUE)
 		cold_data_migration(ptr_ftl_context);
-	update_max_min_nr_erase_cnt_in_pool(ptr_ftl_context);
 	if (check_cold_pool_adjustment(ptr_ftl_context) == TRUE)
 		cold_pool_adjustment(ptr_ftl_context);
 	if (check_hot_pool_adjustment(ptr_ftl_context) == TRUE)
 		hot_pool_adjustment(ptr_ftl_context);
+	update_max_min_nr_erase_cnt_in_pool(ptr_ftl_context);
 
 	/* end */
 #endif	

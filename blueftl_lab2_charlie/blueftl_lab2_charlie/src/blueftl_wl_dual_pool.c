@@ -653,7 +653,7 @@ uint32_t update_max_min_nr_erase_cnt_in_pool( struct ftl_context_t *ptr_ftl_cont
 	update_erase_cnt_in_each_pool(&g_max_rec_in_cold_pool, max_rec_in_cold);
 	update_erase_cnt_in_each_pool(&g_min_ec_in_cold_pool, min_ec_in_cold);
 	update_erase_cnt_in_each_pool(&g_min_rec_in_cold_pool, min_rec_in_cold);
-#if 0
+#if 1
 	printf("g_max_ec_in_cold_pool %d, erase_cnt %d\n", g_max_ec_in_cold_pool.no_block, g_max_ec_in_cold_pool.nr_erase_cnt);
 	printf("g_max_rec_in_cold_pool %d, erase_cnt %d\n", g_max_rec_in_cold_pool.no_block, g_max_rec_in_cold_pool.nr_erase_cnt);
 	printf("g_min_ec_in_cold_pool %d, erase_cnt %d\n", g_min_ec_in_cold_pool.no_block, g_min_ec_in_cold_pool.nr_erase_cnt);
