@@ -207,7 +207,8 @@ uint32_t block_swap(struct flash_block_t *src_block, struct flash_block_t *dest_
 			src_block->nr_valid_pages++;
 			ptr_pg_mapping->ptr_pg_table[dest_logical_page_addr[loop_page]]= ftl_convert_to_physical_page_address(src_block->no_bus, src_block->no_chip, src_block->no_block, loop_page);
 	}
-
+	free(src_block_buff);
+	free(dest_block_buff);
 	return 0;
 }
 
@@ -285,7 +286,7 @@ uint32_t page_clean_in_block(struct flash_block_t *ptr_erase_block,  struct ftl_
 	ptr_erase_block->nr_free_pages = ptr_ssd->nr_pages_per_block;
 
 	for(i = 0; i < ptr_ssd->nr_pages_per_block; i++ ){
-		ptr_erase_block->list_pages[i].no_logical_page_addr = -1;
+		ptr_erase_block->list_pages[i].no_logical_page_addr =  0;
 		ptr_erase_block->list_pages[i].page_status = PAGE_STATUS_FREE;
 	}
 
@@ -297,12 +298,16 @@ void cold_data_migration(struct ftl_context_t* ptr_ftl_context){
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 	struct flash_block_t* ptr_oldest_block_in_hot_pool;
 	struct flash_block_t* ptr_youngest_block_in_cold_pool;
+	struct flash_block_t *a = NULL;
+	struct flash_block_t *b = NULL;
 
-	ptr_oldest_block_in_hot_pool = &ptr_ssd->list_buses[g_max_ec_in_hot_pool.no_bus].list_chips[g_max_ec_in_hot_pool.no_chip].list_blocks[g_max_ec_in_hot_pool.no_block];
-	ptr_youngest_block_in_cold_pool = &ptr_ssd->list_buses[g_min_ec_in_cold_pool.no_bus].list_chips[g_min_ec_in_cold_pool.no_chip].list_blocks[g_min_ec_in_cold_pool.no_block];
+	a=ptr_oldest_block_in_hot_pool = &ptr_ssd->list_buses[g_max_ec_in_hot_pool.no_bus].list_chips[g_max_ec_in_hot_pool.no_chip].list_blocks[g_max_ec_in_hot_pool.no_block];
+	b=ptr_youngest_block_in_cold_pool = &ptr_ssd->list_buses[g_min_ec_in_cold_pool.no_bus].list_chips[g_min_ec_in_cold_pool.no_chip].list_blocks[g_min_ec_in_cold_pool.no_block];
 
 	//swap valid pages of each block to another
+//	printf("before hot %d with nr_invalid %d, nr_valid %d, nr_free %d; cold %d with nr_invalid %d, nr_valid %d, nr_free %d\n ", a->no_block, a->nr_invalid_pages, a->nr_valid_pages, a->nr_free_pages, b->no_block, b->nr_invalid_pages, b->nr_valid_pages,b->nr_free_pages);
 	block_swap(ptr_oldest_block_in_hot_pool, ptr_youngest_block_in_cold_pool, ptr_ftl_context);
+//	printf("before hot %d with nr_invalid %d, nr_valid %d, nr_free %d; cold %d with nr_invalid %d, nr_valid %d, nr_free %d\n ", a->no_block, a->nr_invalid_pages, a->nr_valid_pages, a->nr_free_pages, b->no_block, b->nr_invalid_pages, b->nr_valid_pages,b->nr_free_pages);
 	
 	ptr_oldest_block_in_hot_pool->hot_cold_pool = 0; //move to cold pool
 	ptr_youngest_block_in_cold_pool->hot_cold_pool = 1;// move to hot pool

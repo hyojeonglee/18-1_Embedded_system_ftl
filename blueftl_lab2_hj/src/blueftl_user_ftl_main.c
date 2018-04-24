@@ -93,7 +93,7 @@ int32_t blueftl_user_ftl_main (
 
 		case NETLINK_WRITE:
 			for (lpa_curr = lpa_begin; lpa_curr < lpa_end; lpa_curr++) {
-				uint32_t bus, chip, block, page;
+				uint32_t bus = 0, chip = 0, block = 0, page = 0;
 				uint8_t* ptr_lba_buff = ptr_buffer + 
 					((lpa_curr - lpa_begin) * _ptr_vdevice->page_main_size);
 				uint8_t is_merge_needed = 0;

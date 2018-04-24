@@ -110,7 +110,6 @@ void perf_wl_log_blk_erasures(struct ftl_context_t* ptr_ftl_context)
 	char *line = NULL;
 	char *file_path = "log";
 	struct flash_block_t* ptr_block;
-
 	if ((fp = fopen(file_path, "w")) != NULL) {
 		fwrite("X Y\n", 4, 1, fp);
 		for (i = 0; i < ptr_ssd->nr_blocks_per_chip; i++) {

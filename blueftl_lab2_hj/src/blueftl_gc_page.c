@@ -63,6 +63,8 @@ int32_t gc_page_trigger_gc_lab (
 
 	/* Choose victim ! */
 	ptr_victim_block = &ptr_ssd->list_buses[gc_target_bus].list_chips[gc_target_chip].list_blocks[tmp_target_block];
+//	printf("select victim %d, with invalid %d, valid %d, free %d\n", ptr_victim_block->no_block, ptr_victim_block->nr_invalid_pages, ptr_victim_block->nr_valid_pages, ptr_victim_block->nr_free_pages);
+
 
 	if ((ptr_block_buff = (uint8_t*)malloc (ptr_ssd->nr_pages_per_block * ptr_vdevice->page_main_size)) == NULL) {
 		printf("blueftl_gc_page: the malloc for the buffer failed\n");
@@ -72,7 +74,7 @@ int32_t gc_page_trigger_gc_lab (
 
 	/* step 1. read all the valid pages from the target block */
 	for (loop_page = 0; loop_page < ptr_ssd->nr_pages_per_block; loop_page++) {
-		if (ptr_victim_block->list_pages[loop_page].page_status == 3) {
+		if (ptr_victim_block->list_pages[loop_page].page_status == PAGE_STATUS_VALID) {
 			ptr_page_buff = ptr_block_buff + (loop_page * ptr_vdevice->page_main_size);
 
 			blueftl_user_vdevice_page_read (
@@ -84,6 +86,7 @@ int32_t gc_page_trigger_gc_lab (
 			perf_gc_inc_page_copies ();
 		}
 	}
+
 	
 	/* step 2. free victim block */
 	blueftl_user_vdevice_block_erase (ptr_vdevice, gc_target_bus, gc_target_chip, tmp_target_block);
@@ -93,7 +96,8 @@ int32_t gc_page_trigger_gc_lab (
 	perf_gc_inc_blk_erasures ();
 
 	ptr_victim_block->nr_invalid_pages = 0;
-	ptr_victim_block->nr_free_pages = 0;
+	ptr_victim_block->nr_free_pages = 64;
+	ptr_victim_block->nr_valid_pages = 0;
 
 	/* step 3. write valid page to free block and update page table */
 	for (loop_page = 0; loop_page < ptr_ssd->nr_pages_per_block; loop_page++) {
@@ -105,14 +109,17 @@ int32_t gc_page_trigger_gc_lab (
 					gc_target_bus, gc_target_chip, tmp_target_block, loop_page,
 					ptr_vdevice->page_main_size,
 					(char*)ptr_page_buff);
+			ptr_victim_block->nr_valid_pages++;
+			ptr_victim_block->nr_free_pages--;
 			
 		} else {
 			ptr_victim_block->list_pages[loop_page].page_status = 1;
-			ptr_victim_block->nr_free_pages++;
+		//	ptr_victim_block->nr_free_pages++;
 
 		}
 	}
 
+//	printf("after victim %d, with invalid %d, valid %d, free %d\n", ptr_victim_block->no_block, ptr_victim_block->nr_invalid_pages, ptr_victim_block->nr_valid_pages, ptr_victim_block->nr_free_pages);
 
 	/* for wear leveling */
 #if 1
