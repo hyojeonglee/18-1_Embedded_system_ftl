@@ -68,6 +68,18 @@ struct ftl_context_t* page_mapping_create_ftl_context (
 	/* set virtual device */
 	ptr_ftl_context->ptr_vdevice = ptr_vdevice;
 
+	/*create write buffer*/
+	if((ptr_ftl_context->ptr_write_buff = (struct ftl_write_buffer_t *)malloc(sizeof(struct ftl_write_buffer_t))) == NULL) {
+		printf("blueftl_mapping_page: the creation of the ftl context failed\n");
+		goto error_alloc_ftl_page_mapping_context;
+	}
+
+	if((ptr_ftl_context->ptr_write_buff->write_buff = (uint8_t *)malloc(COMP_WRITE_BUFF_SIZE * ptr_vdevice->page_main_size)) == NULL){
+		printf("blueftl_mapping_page: the creation of the ftl context failed\n");
+		goto error_alloc_ftl_page_mapping_context;
+	}
+
+	ptr_ftl_context->ptr_write_buff->nr_pages = 0;
 	
 	// initialize latest info
 	ptr_ftl_context->latest_chip = -1;

@@ -16,6 +16,13 @@
 #define WL_POLICY_NONE				1
 #define WL_DUAL_POOL				2
 
+#define COMP_WRITE_BUFF_SIZE		4
+
+struct ftl_write_buffer_t {
+	uint8_t *write_buff;
+	uint32_t nr_pages;
+	uint32_t lpas_in_buff[COMP_WRITE_BUFF_SIZE];
+};
 
 struct ftl_context_t {
 	/* all about SSD */
@@ -26,6 +33,9 @@ struct ftl_context_t {
 
 	/* virtual device */
 	struct virtual_device_t* ptr_vdevice;
+
+	/*write bufer*/
+	struct ftl_write_buffer_t* ptr_write_buff;
 
 	int32_t latest_bus;
 	int32_t latest_chip;

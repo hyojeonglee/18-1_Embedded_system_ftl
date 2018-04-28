@@ -57,6 +57,10 @@ int32_t blueftl_user_ftl_main (
 	uint32_t lpa_curr;
 	int32_t ret;
 
+	/*added by charlie*/
+	struct ftl_write_buffer_t * ptr_ftl_write_buff = _ptr_ftl_context->ptr_write_buff;
+	/*added by charlie end*/
+
 	if (_ptr_vdevice == NULL || _ptr_vdevice->blueftl_char_h == -1) {
 		printf ("blueftl_user_ftl_main: the character device driver is not initialized\n");
 		return -1;
@@ -64,6 +68,7 @@ int32_t blueftl_user_ftl_main (
 
 	lpa_begin = lba_begin / _ptr_vdevice->page_main_size;
 	lpa_end = lpa_begin + (lba_end / _ptr_vdevice->page_main_size);
+	
 
 	switch (req_dir) {
 		case NETLINK_READA:
@@ -89,12 +94,34 @@ int32_t blueftl_user_ftl_main (
 			break;
 
 		case NETLINK_WRITE:
+
+			
 			for (lpa_curr = lpa_begin; lpa_curr < lpa_end; lpa_curr++) {
 				uint32_t bus, chip, block, page;
 				uint8_t* ptr_lba_buff = ptr_buffer + 
 					((lpa_curr - lpa_begin) * _ptr_vdevice->page_main_size);
+				uint8_t* ptr_page_buff = NULL;
 				uint8_t is_merge_needed = 0;
-				
+
+				/*fullfill the write buffer; is timeout needed?*/
+				if(ptr_ftl_write_buff->nr_pages < 4) {
+					ptr_page_buff = ptr_ftl_write_buff->write_buff + ptr_ftl_write_buff->nr_pages * _ptr_vdevice->page_main_size;
+					memcpy(ptr_lba_buff, ptr_page_buff, _ptr_vdevice->page_main_size);
+					ptr_ftl_write_buff->lpas_in_buff[ptr_ftl_write_buff->nr_pages] = lpa_curr;
+					ptr_ftl_write_buff->nr_pages++;
+					continue;
+				}else {
+					uint8_t* output = NULL;
+					uint8_t* input = ptr_ftl_write_buff->write_buff;
+					int32_t size = compress(input, sizeof(*ptr_ftl_write_buff->write_buff),output);
+					if(size == -1) {
+						printf("compress error\n");
+						return -1;
+					}else {
+						/*get the physical page address from FTL for output*/
+					}
+				}
+					
 				/* get the new physical page address from the FTL */
 				if (_ftl_base.ftl_get_free_physical_page_address (
 						_ptr_ftl_context, lpa_curr, &bus, &chip, &block, &page) == -1) {

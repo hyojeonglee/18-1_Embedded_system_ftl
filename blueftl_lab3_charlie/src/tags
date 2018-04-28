@@ -16,6 +16,7 @@ CC	Makefile	/^CC=gcc$/;"	m
 CFLAGS	Makefile	/^CFLAGS=-g -Wall$/;"	m
 COLD_POOL	blueftl_wl_dual_pool.h	24;"	d
 COLD_REC_POOL	blueftl_wl_dual_pool.h	26;"	d
+COMP_WRITE_BUFF_SIZE	blueftl_ftl_base.h	19;"	d
 C_SIZE	lzrw3.h	19;"	d
 DISABLE_HEAD	blueftl_wl_dual_pool.h	33;"	d
 DISABLE_TAIL	blueftl_wl_dual_pool.h	35;"	d
@@ -136,6 +137,7 @@ cold_data_migration	blueftl_wl_dual_pool.h	/^	void (* cold_data_migration) (stru
 cold_pool_adjustment	blueftl_wl_dual_pool.c	/^void cold_pool_adjustment(struct ftl_context_t *ptr_ftl_context){$/;"	f
 cold_pool_adjustment	blueftl_wl_dual_pool.h	/^	void (* cold_pool_adjustment) (struct ftl_context_t *ptr_ftl_context_t);$/;"	m	struct:ftl_wl_t
 compress	lzrw3.c	/^UWORD compress(UBYTE* input, UWORD input_size, UBYTE* output)$/;"	f
+curr_page_count	blueftl_ftl_base.h	/^	uint32_t curr_page_count;$/;"	m	struct:ftl_write_buffer_t
 decompress	lzrw3.c	/^UWORD decompress(UBYTE* input, UWORD input_size, UBYTE *output)$/;"	f
 device_capacity	blueftl_user_vdevice.h	/^	uint32_t device_capacity;$/;"	m	struct:virtual_device_t
 dual_pool_block_info	blueftl_wl_dual_pool.h	/^} dual_pool_block_info;$/;"	t	typeref:struct:_block_info_node
@@ -161,6 +163,7 @@ ftl_trigger_gc	blueftl_ftl_base.h	/^	int32_t (*ftl_trigger_gc) ($/;"	m	struct:ft
 ftl_trigger_merge	blueftl_ftl_base.h	/^	int32_t (*ftl_trigger_merge) ($/;"	m	struct:ftl_base_t
 ftl_trigger_wear_leveler	blueftl_ftl_base.h	/^	void (*ftl_trigger_wear_leveler) (void);$/;"	m	struct:ftl_base_t
 ftl_wl_t	blueftl_wl_dual_pool.h	/^struct ftl_wl_t {$/;"	s
+ftl_write_buffer_t	blueftl_ftl_base.h	/^struct ftl_write_buffer_t {$/;"	s
 g_max_ec_in_cold_pool	blueftl_wl_dual_pool.c	/^dual_pool_block_info g_max_ec_in_cold_pool;$/;"	v
 g_max_ec_in_hot_pool	blueftl_wl_dual_pool.c	/^dual_pool_block_info g_max_ec_in_hot_pool;$/;"	v
 g_max_rec_in_cold_pool	blueftl_wl_dual_pool.c	/^dual_pool_block_info g_max_rec_in_cold_pool;$/;"	v
@@ -193,6 +196,7 @@ list_blocks	blueftl_ssdmgmt.h	/^	struct flash_block_t* list_blocks;$/;"	m	struct
 list_buses	blueftl_ssdmgmt.h	/^	struct flash_bus_t* list_buses;$/;"	m	struct:flash_ssd_t	typeref:struct:flash_ssd_t::flash_bus_t
 list_chips	blueftl_ssdmgmt.h	/^	struct flash_chip_t* list_chips;$/;"	m	struct:flash_bus_t	typeref:struct:flash_bus_t::flash_chip_t
 list_pages	blueftl_ssdmgmt.h	/^	struct flash_page_t* list_pages;$/;"	m	struct:flash_block_t	typeref:struct:flash_block_t::flash_page_t
+lpas_in_buffer	blueftl_ftl_base.h	/^	uint32_t lpas_in_buffer[COMP_WRITE_BUFF_SIZE];$/;"	m	struct:ftl_write_buffer_t
 mapping_policy	blueftl_user.h	/^	uint32_t mapping_policy;$/;"	m	struct:ssd_params_t
 max	blueftl_util.h	12;"	d
 max_erase_cnt	blueftl_ftl_base.h	/^	int32_t max_erase_cnt;$/;"	m	struct:ftl_context_t
@@ -258,6 +262,8 @@ ptr_page_data	blueftl_char.h	/^	uint8_t ptr_page_data[2048];$/;"	m	struct:blueft
 ptr_pg_table	blueftl_mapping_page.h	/^	uint32_t* ptr_pg_table; \/* for the page mapping *\/$/;"	m	struct:ftl_page_mapping_context_t
 ptr_ssd	blueftl_ftl_base.h	/^	struct flash_ssd_t* ptr_ssd;$/;"	m	struct:ftl_context_t	typeref:struct:ftl_context_t::flash_ssd_t
 ptr_vdevice	blueftl_ftl_base.h	/^	struct virtual_device_t* ptr_vdevice;$/;"	m	struct:ftl_context_t	typeref:struct:ftl_context_t::virtual_device_t
+ptr_write_buff	blueftl_ftl_base.h	/^	struct ftl_write_buffer_t* ptr_write_buff;$/;"	m	struct:ftl_context_t	typeref:struct:ftl_context_t::ftl_write_buffer_t
+ptr_write_buff	blueftl_ftl_base.h	/^	uint8_t *ptr_write_buff;$/;"	m	struct:ftl_write_buffer_t
 ssd_params_t	blueftl_user.h	/^struct ssd_params_t {$/;"	s
 ssd_type	blueftl_user.h	/^	uint32_t ssd_type;$/;"	m	struct:ssd_params_t
 timer_get_timestamp_in_sec	blueftl_util.c	/^uint32_t timer_get_timestamp_in_sec (void)$/;"	f
