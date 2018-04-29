@@ -1,4 +1,4 @@
-cscope 15 /home/ssd/embedded_ftl/blueftl_lab3_charlie/src               0000475349
+cscope 15 /home/ssd/embedded_ftl/blueftl_lab3_charlie/src               0000477430
 	@blueftl_char.h
 
 1 #iâdeà
@@ -366,19 +366,19 @@ _BLUESSD_MAPPING_BASE
 22 
 ušt8_t
  *
-	m±r_wr™e_buff
+	mwr™e_buff
 ;
 
 23 
 ušt32_t
  
-	mcu¼_·ge_couÁ
+	mÄ_·ges
 ;
 
 24 
 ušt32_t
  
-	mÍas_š_bufãr
+	mÍas_š_buff
 [
 COMP_WRITE_BUFF_SIZE
 ];
@@ -397,59 +397,63 @@ COMP_WRITE_BUFF_SIZE
 	m±r_m­pšg
 ;
 
-35 
+34 * 
+	m±r_chunk_bË
+;
+
+37 
 vœtu®_deviû_t
 * 
 	m±r_vdeviû
 ;
 
-38 
+40 
 ál_wr™e_bufãr_t
 * 
 	m±r_wr™e_buff
 ;
 
-40 
+42 
 št32_t
  
 	mÏ‹¡_bus
 ;
 
-41 
+43 
 št32_t
  
 	mÏ‹¡_ch
 ;
 
-42 
+44 
 št32_t
  
 	mÏ‹¡_block
 ;
 
-44 
+46 
 št32_t
  
 	mmax_”a£_út
 ;
 
-45 
+47 
 št32_t
  
 	mmš_”a£_út
 ;
 
-49 
+51 
 	sál_ba£_t
  {
 
-51 
+53 
 ál_cÚ‹xt_t
 * 
 	m±r_ál_cÚ‹xt
 ;
 
-54 
+56 
 	mál_cÚ‹xt_t
 * (*
 	mál_ü—‹_ál_cÚ‹xt
@@ -459,7 +463,7 @@ vœtu®_deviû_t
 	m±r_vdeviû
 );
 
-55 (*
+57 (*
 	mál_de¡roy_ál_cÚ‹xt
 è(
 ál_cÚ‹xt_t
@@ -467,261 +471,261 @@ vœtu®_deviû_t
 	m±r_ál_cÚ‹xt
 );
 
-57 
+59 
 št32_t
  (*
 ál_g‘_m­³d_physiÿl_·ge_add»ss
 ) (
 
-58 
+60 
 ál_cÚ‹xt_t
 * 
 	m±r_ál_cÚ‹xt
 ,
 
-59 
+61 
 ušt32_t
  
 	mlogiÿl_·ge_add»ss
-,
-
-60 
-ušt32_t
-* 
-	m±r_bus
-,
-
-61 
-ušt32_t
-* 
-	m±r_ch
 ,
 
 62 
 ušt32_t
 * 
-	m±r_block
+	m±r_bus
 ,
 
 63 
 ušt32_t
 * 
-	m±r_·ge
-);
-
-65 
-št32_t
- (*
-ál_g‘_ä“_physiÿl_·ge_add»ss
-) (
-
-66 
-ál_cÚ‹xt_t
-* 
-	m±r_ál_cÚ‹xt
-,
-
-67 
-ušt32_t
- 
-	mlogiÿl_·ge_add»ss
-,
-
-68 
-ušt32_t
-* 
-	m±r_bus
-,
-
-69 
-ušt32_t
-* 
 	m±r_ch
 ,
 
-70 
+64 
 ušt32_t
 * 
 	m±r_block
 ,
 
-71 
+65 
 ušt32_t
 * 
 	m±r_·ge
 );
 
+67 
+št32_t
+ (*
+ál_g‘_ä“_physiÿl_·ge_add»ss
+) (
+
+68 
+ál_cÚ‹xt_t
+* 
+	m±r_ál_cÚ‹xt
+,
+
+69 
+ušt32_t
+ 
+	mlogiÿl_·ge_add»ss
+,
+
+70 
+ušt32_t
+* 
+	m±r_bus
+,
+
+71 
+ušt32_t
+* 
+	m±r_ch
+,
+
+72 
+ušt32_t
+* 
+	m±r_block
+,
+
 73 
+ušt32_t
+* 
+	m±r_·ge
+);
+
+75 
 št32_t
  (*
 ál_m­_logiÿl_to_physiÿl
 ) (
 
-74 
+76 
 ál_cÚ‹xt_t
 * 
 	m±r_ál_cÚ‹xt
-,
-
-75 
-ušt32_t
- 
-	mlogiÿl_·ge_add»ss
-,
-
-76 
-ušt32_t
- 
-	mbus
 ,
 
 77 
 ušt32_t
  
-	mch
+	mlogiÿl_·ge_add»ss
 ,
 
 78 
 ušt32_t
  
-	mblock
+	mbus
 ,
 
 79 
 ušt32_t
  
+	mch
+,
+
+80 
+ušt32_t
+ 
+	mblock
+,
+
+81 
+ušt32_t
+ 
 	m·ge
 );
 
-81 
+83 
 št32_t
  (*
 ál_Œigg”_gc
 ) (
 
-82 
+84 
 ál_cÚ‹xt_t
 * 
 	m±r_ál_cÚ‹xt
 ,
 
-83 
+85 
 št32_t
  
 	mgc_rg‘_bus
 ,
 
-84 
+86 
 št32_t
  
 	mgc_rg‘_ch
 );
 
-86 
+88 
 št32_t
  (*
 ál_Œigg”_m”ge
 ) (
 
-87 
+89 
 ál_cÚ‹xt_t
 * 
 	m±r_ál_cÚ‹xt
 ,
 
-88 
+90 
 ušt32_t
  
 	mlogiÿl_·ge_add»ss
 ,
 
-89 
+91 
 ušt8_t
 * 
 	m±r_lba_bufãr
 ,
 
-90 
+92 
 ušt32_t
  
 	mm”ge_bus
 ,
 
-91 
+93 
 ušt32_t
  
 	mm”ge_ch
 ,
 
-92 
+94 
 ušt32_t
  
 	mm”ge_block
 );
 
-94 (*
+96 (*
 	mál_Œigg”_w—r_Ëv–”
 ) ();
 
-97 
+99 
 ál_cÚv”t_to_ssd_Ïyout
  (
 
-98 
+100 
 ušt32_t
  
 physiÿl_·ge_add»ss
 ,
 
-99 
+101 
 ušt32_t
 * 
 ±r_bus
 ,
 
-100 
+102 
 ušt32_t
 * 
 ±r_ch
 ,
 
-101 
+103 
 ušt32_t
 * 
 ±r_block
 ,
 
-102 
+104 
 ušt32_t
 * 
 ±r_·ge
 );
 
-104 
+106 
 ušt32_t
  
 ál_cÚv”t_to_physiÿl_·ge_add»ss
  (
 
-105 
+107 
 ušt32_t
  
 bus
 ,
 
-106 
+108 
 ušt32_t
  
 ch
 ,
 
-107 
+109 
 ušt32_t
  
 block
 ,
 
-108 
+110 
 ušt32_t
  
 ·ge
@@ -3361,7 +3365,15 @@ NULL
 NULL
 ;
 
-50 ià((
+47 
+ál_chunk_bË_cÚ‹xt_t
+* 
+±r_chunk_bË
+ = 
+NULL
+;
+
+51 ià((
 ±r_ál_cÚ‹xt
  = (
 ál_cÚ‹xt_t
@@ -3371,15 +3383,15 @@ NULL
 NULL
 ) {
 
-51 
+52 
 	`´štf
  ("blueftl_mapping_page:he creation ofhe ftl context failed\n");
 
-52 
+53 
 ”rÜ_®loc_ál_cÚ‹xt
 ;
 
-56 ià((
+57 ià((
 ±r_ál_cÚ‹xt
 ->
 ±r_ssd
@@ -3391,15 +3403,15 @@ NULL
 NULL
 ) {
 
-57 
+58 
 	`´štf
  ("blueftl_mapping_page:he creation ofhe ftl context failed\n");
 
-58 
+59 
 ”rÜ_ü—‹_ssd_cÚ‹xt
 ;
 
-63 ià((
+64 ià((
 ±r_ál_cÚ‹xt
 ->
 ±r_m­pšg
@@ -3411,21 +3423,21 @@ NULL
 NULL
 ) {
 
-64 
+65 
 	`´štf
  ("blueftl_mapping_page:he creation ofhe ftl context failed\n");
 
-65 
+66 
 ”rÜ_®loc_ál_·ge_m­pšg_cÚ‹xt
 ;
 
-69 
+70 
 ±r_ál_cÚ‹xt
 ->
 ±r_vdeviû
  =…tr_vdevice;
 
-72 if((
+73 if((
 ±r_ál_cÚ‹xt
 ->
 ±r_wr™e_buff
@@ -3437,39 +3449,75 @@ NULL
 NULL
 ) {
 
-73 
+74 
 	`´štf
 ("blueftl_mapping_page:he creation ofhe ftl context failed\n");
 
-74 
+75 
 ”rÜ_®loc_ál_·ge_m­pšg_cÚ‹xt
 ;
 
+78 if((
+±r_ál_cÚ‹xt
+->
+±r_wr™e_buff
+->
+wr™e_buff
+ = (
+ušt8_t
+ *)
+	`m®loc
+(
+COMP_WRITE_BUFF_SIZE
+ * 
+±r_vdeviû
+->
+·ge_maš_size
+)è=ğ
+NULL
+){
+
 79 
+	`´štf
+("blueftl_mapping_page:he creation ofhe ftl context failed\n");
+
+80 
+”rÜ_®loc_ál_·ge_m­pšg_cÚ‹xt
+;
+
+83 
+±r_ál_cÚ‹xt
+->
+±r_wr™e_buff
+->
+Ä_·ges
+ = 0;
+
+86 
 ±r_ál_cÚ‹xt
 ->
 Ï‹¡_ch
  = -1;
 
-80 
+87 
 ±r_ál_cÚ‹xt
 ->
 Ï‹¡_bus
  = -1;
 
-81 
+88 
 ±r_ál_cÚ‹xt
 ->
 Ï‹¡_block
  = -1;
 
-84 
+91 
 ±r_ssd
  = 
 ±r_ál_cÚ‹xt
 ->ptr_ssd;
 
-85 
+92 
 ±r_pg_m­pšg
  = (
 ál_·ge_m­pšg_cÚ‹xt_t
@@ -3479,13 +3527,13 @@ NULL
 ±r_m­pšg
 ;
 
-90 
+99 
 ±r_pg_m­pšg
 ->
 Ä_pg_bË_’Œ›s
  =
 
-91 
+100 
 ±r_ssd
 ->
 Ä_bu£s
@@ -3497,7 +3545,7 @@ NULL
 Ä_·ges_³r_block
 ;
 
-94 ià((
+103 ià((
 ±r_pg_m­pšg
 ->
 ±r_pg_bË
@@ -3511,15 +3559,15 @@ ušt32_t
 NULL
 ) {
 
-95 
+104 
 	`´štf
  ("blueftl_mapping_page: failedo‡llocatehe memory for…tr_mapping_table\n");
 
-96 
+105 
 ”rÜ_®loc_m­pšg_bË
 ;
 
-100 
+109 
 š™_pg_loİ
  = 0; in™_pg_loİ < 
 ±r_pg_m­pšg
@@ -3527,7 +3575,7 @@ NULL
 Ä_pg_bË_’Œ›s
 ; init_pg_loop++) {
 
-101 
+110 
 ±r_pg_m­pšg
 ->
 ±r_pg_bË
@@ -3537,15 +3585,101 @@ NULL
 PAGE_TABLE_FREE
 ;
 
-106  
+114 
+±r_chunk_bË
+ = (
+ál_chunk_bË_cÚ‹xt_t
+ *)
+±r_ál_cÚ‹xt
+->ptr_chunk_table;
+
+116 
+±r_chunk_bË
+->
+Ä_chunk_bË_’Œ›s
+ = 
+±r_ssd
+->
+Ä_bu£s
+ *…Œ_ssd->
+Ä_chs_³r_bus
+ *…Œ_ssd->
+Ä_blocks_³r_ch
+ *…Œ_ssd->
+Ä_·ges_³r_block
+;
+
+118 ià((
+±r_chunk_bË
+->
+±r_chunks
+ = (
+ál_chunk_bË_’Œy_t
+*)
+	`m®loc
+ (±r_chunk_bË->
+Ä_chunk_bË_’Œ›s
+ *  (
+ál_chunk_bË_’Œy
+))è=ğ
+NULL
+) {
+
+119 
+	`´štf
+ ("blueftl_mapping_page: failedo‡llocatehe memory for…tr_mapping_table\n");
+
+120 
+”rÜ_®loc_m­pšg_bË
+;
+
+123 
+š™_pg_loİ
+ = 0; in™_pg_loİ < 
+±r_chunk_bË
+->
+Ä_chunk_bË_’Œ›s
+; init_pg_loop++) {
+
+124 
+±r_pg_m­pšg
+->
+±r_chunks
+[
+š™_pg_loİ
+]->
+physiÿl_·ge_add»ss
+ = -1;
+
+125 
+±r_pg_m­pšg
+->
+±r_chunks
+[
+š™_pg_loİ
+]->
+Ä_·ges
+ = 0;
+
+126 
+±r_pg_m­pšg
+->
+±r_chunks
+[
+š™_pg_loİ
+]->
+is_com´es£d
+ = 0;
+
+131  
 ±r_ál_cÚ‹xt
 ;
 
-109 
+134 
 ”rÜ_®loc_m­pšg_bË
 :
 
-111 
+136 
 	`ä“
  (
 ±r_ál_cÚ‹xt
@@ -3553,39 +3687,39 @@ PAGE_TABLE_FREE
 ±r_m­pšg
 );
 
-113 
+138 
 ”rÜ_®loc_ál_·ge_m­pšg_cÚ‹xt
 :
 
-114 
+139 
 	`ssdmgmt_de¡roy_ssd
  (
 ±r_ssd
 );
 
-116 
+141 
 ”rÜ_ü—‹_ssd_cÚ‹xt
 :
 
-118 
+143 
 	`ä“
  (
 ±r_ál_cÚ‹xt
 );
 
-120 
+145 
 ”rÜ_®loc_ál_cÚ‹xt
 :
 
-121  
+146  
 NULL
 ;
 
-122 
+147 
 	}
 }
 
-125 
+150 
 	$·ge_m­pšg_de¡roy_ál_cÚ‹xt
  (
 ál_cÚ‹xt_t
@@ -3593,7 +3727,7 @@ NULL
 ±r_ál_cÚ‹xt
 )
 
-127 
+152 
 æash_ssd_t
 * 
 ±r_ssd
@@ -3601,7 +3735,7 @@ NULL
 ±r_ál_cÚ‹xt
 ->ptr_ssd;
 
-128 
+153 
 ál_·ge_m­pšg_cÚ‹xt_t
 * 
 ±r_pg_m­pšg
@@ -3611,7 +3745,7 @@ NULL
 ±r_m­pšg
 ;
 
-131 ià(
+156 ià(
 ±r_pg_m­pšg
 ->
 ±r_pg_bË
@@ -3619,7 +3753,7 @@ NULL
 NULL
 ) {
 
-133 
+158 
 	`ä“
  (
 ±r_pg_m­pšg
@@ -3627,83 +3761,83 @@ NULL
 ±r_pg_bË
 );
 
-138 ià(
+163 ià(
 ±r_pg_m­pšg
  !ğ
 NULL
 )
 
-140 
+165 
 	`ä“
  (
 ±r_pg_m­pšg
 );
 
-143 
+168 
 	`ssdmgmt_de¡roy_ssd
  (
 ±r_ssd
 );
 
-146 ià(
+171 ià(
 ±r_ál_cÚ‹xt
  !ğ
 NULL
 )
 
-148 
+173 
 	`ä“
  (
 ±r_ál_cÚ‹xt
 );
 
-149 
+174 
 	}
 }
 
-152 
+177 
 št32_t
  
 	$·ge_m­pšg_g‘_m­³d_physiÿl_·ge_add»ss
  (
 
-153 
+178 
 ál_cÚ‹xt_t
 * 
 ±r_ál_cÚ‹xt
 ,
 
-154 
+179 
 ušt32_t
  
 logiÿl_·ge_add»ss
 ,
 
-155 
+180 
 ušt32_t
  *
 ±r_bus
 ,
 
-156 
+181 
 ušt32_t
  *
 ±r_ch
 ,
 
-157 
+182 
 ušt32_t
  *
 ±r_block
 ,
 
-158 
+183 
 ušt32_t
  *
 ±r_·ge
 )
 
-160 
+185 
 æash_ssd_t
 * 
 ±r_ssd
@@ -3711,7 +3845,7 @@ ušt32_t
 ±r_ál_cÚ‹xt
 ->ptr_ssd;
 
-161 
+186 
 ál_·ge_m­pšg_cÚ‹xt_t
 * 
 ±r_pg_m­pšg
@@ -3721,19 +3855,19 @@ ušt32_t
 ±r_m­pšg
 ;
 
-163 
+188 
 ušt32_t
  
 physiÿl_·ge_add»ss
 ;
 
-165 
+190 
 št32_t
  
 »t
  = -1;
 
-168 
+193 
 physiÿl_·ge_add»ss
  = 
 ±r_pg_m­pšg
@@ -3743,13 +3877,13 @@ physiÿl_·ge_add»ss
 logiÿl_·ge_add»ss
 ];
 
-171 ià(
+196 ià(
 physiÿl_·ge_add»ss
  =ğ
 PAGE_TABLE_FREE
 ) {
 
-173 *
+198 *
 ±r_bus
  = *
 ±r_ch
@@ -3759,11 +3893,11 @@ PAGE_TABLE_FREE
 ±r_·ge
  = -1;
 
-174 
+199 
 »t
  = -1;
 
-176 
+201 
 æash_·ge_t
 * 
 ±r_”a£_·ge
@@ -3771,7 +3905,7 @@ PAGE_TABLE_FREE
 NULL
 ;
 
-179 
+204 
 	`ál_cÚv”t_to_ssd_Ïyout
  (
 physiÿl_·ge_add»ss
@@ -3785,7 +3919,7 @@ physiÿl_·ge_add»ss
 ±r_·ge
 );
 
-181 
+206 
 ±r_”a£_·ge
  = &
 ±r_ssd
@@ -3807,7 +3941,7 @@ li¡_·ges
 ±r_·ge
 ];
 
-182 ià(
+207 ià(
 ±r_”a£_·ge
 ->
 ·ge_¡©us
@@ -3815,7 +3949,7 @@ li¡_·ges
 PAGE_STATUS_FREE
 ) {
 
-184 *
+209 *
 ±r_bus
  = *
 ±r_ch
@@ -3825,65 +3959,65 @@ PAGE_STATUS_FREE
 ±r_·ge
  = -1;
 
-185 
+210 
 »t
  = -1;
 
-187 
+212 
 »t
  = 0;
 
-191  
+216  
 »t
 ;
 
-192 
+217 
 	}
 }
 
-195 
+220 
 št32_t
  
 	$·ge_m­pšg_g‘_ä“_physiÿl_·ge_add»ss
  (
 
-196 
+221 
 ál_cÚ‹xt_t
 * 
 ±r_ál_cÚ‹xt
 ,
 
-197 
+222 
 ušt32_t
  
 logiÿl_·ge_add»ss
 ,
 
-198 
+223 
 ušt32_t
  *
 ±r_bus
 ,
 
-199 
+224 
 ušt32_t
  *
 ±r_ch
 ,
 
-200 
+225 
 ušt32_t
  *
 ±r_block
 ,
 
-201 
+226 
 ušt32_t
  *
 ±r_·ge
 )
 
-203 
+228 
 æash_ssd_t
 * 
 ±r_ssd
@@ -3891,7 +4025,7 @@ ušt32_t
 ±r_ál_cÚ‹xt
 ->ptr_ssd;
 
-204 
+229 
 ál_·ge_m­pšg_cÚ‹xt_t
 * 
 ±r_pg_m­pšg
@@ -3901,25 +4035,25 @@ ušt32_t
 ±r_m­pšg
 ;
 
-205 
+230 
 æash_block_t
 * 
 ±r_”a£_block
 ;
 
-206 
+231 
 æash_·ge_t
 * 
 ±r_”a£_·ge
 ;
 
-208 
+233 
 ušt32_t
  
 physiÿl_·ge_add»ss
 ;
 
-210 
+235 
 physiÿl_·ge_add»ss
  = 
 ±r_pg_m­pšg
@@ -3929,7 +4063,7 @@ physiÿl_·ge_add»ss
 logiÿl_·ge_add»ss
 ];
 
-212 
+237 
 ušt32_t
  
 i
@@ -3941,13 +4075,13 @@ m
 n
 ;
 
-214 ià(
+239 ià(
 physiÿl_·ge_add»ss
  !ğ
 PAGE_TABLE_FREE
 ) {
 
-217 
+242 
 	`ál_cÚv”t_to_ssd_Ïyout
  (
 physiÿl_·ge_add»ss
@@ -3961,7 +4095,7 @@ physiÿl_·ge_add»ss
 ±r_·ge
 );
 
-223 
+248 
 ±r_”a£_block
  = &
 ±r_ssd
@@ -3979,7 +4113,7 @@ li¡_blocks
 ±r_block
 ];
 
-224 
+249 
 ±r_”a£_·ge
  = &
 ±r_ssd
@@ -4001,43 +4135,43 @@ li¡_·ges
 ±r_·ge
 ];
 
-225 if(
+250 if(
 ±r_”a£_·ge
 ->
 ·ge_¡©us
  != 2){
 
-226 
+251 
 ±r_”a£_·ge
 ->
 ·ge_¡©us
  = 2;
 
-227 
+252 
 ±r_”a£_block
 ->
 Ä_v®id_·ges
 --;
 
-228 
+253 
 ±r_”a£_block
 ->
 Ä_šv®id_·ges
 ++;
 
-231 
+256 
 Ä_®l_u£d_block
  = 0;
 
-232 
+257 
 found_ä“_·ge
  = 0;
 
-233 
+258 
 is_®l_u£d
 ;
 
-235 
+260 
 i
  = 0 ; i < 
 ±r_ssd
@@ -4045,7 +4179,7 @@ i
 Ä_bu£s
 ; i++) {
 
-236 
+261 
 j
  = 0; j < 
 ±r_ssd
@@ -4053,7 +4187,7 @@ j
 Ä_chs_³r_bus
 ; j++) {
 
-237 
+262 
 m
  = 0; m < 
 ±r_ssd
@@ -4061,7 +4195,7 @@ m
 Ä_blocks_³r_ch
 ; m++) {
 
-238 
+263 
 ±r_”a£_block
  = &
 ±r_ssd
@@ -4079,11 +4213,11 @@ li¡_blocks
 m
 ];
 
-239 
+264 
 is_®l_u£d
  = 0;
 
-240 
+265 
 n
  = 0;‚ < 
 ±r_ssd
@@ -4091,7 +4225,7 @@ n
 Ä_·ges_³r_block
 ;‚++) {
 
-241 ià(
+266 ià(
 ±r_”a£_block
 ->
 li¡_·ges
@@ -4103,69 +4237,69 @@ n
 PAGE_STATUS_FREE
 ) {
 
-242 ià(
+267 ià(
 found_ä“_·ge
  == 0) {
 
-243 *
+268 *
 ±r_bus
  = 
 i
 ;
 
-244 *
+269 *
 ±r_ch
  = 
 j
 ;
 
-245 *
+270 *
 ±r_block
  = 
 m
 ;
 
-246 *
+271 *
 ±r_·ge
  = 
 n
 ;
 
-249 
+274 
 is_®l_u£d
  = 0;
 
-250 
+275 
 found_ä“_·ge
  = 1;
 
-252 
+277 
 is_®l_u£d
  = 1;
 
-255 ià(
+280 ià(
 is_®l_u£d
  == 1)
 
-256 
+281 
 Ä_®l_u£d_block
 ++;
 
-258 ià(
+283 ià(
 found_ä“_·ge
  == 1) {
 
-267 
+292 
 ušt32_t
  
 loİ_·ge
  = 0;
 
-269 ià(
+294 ià(
 physiÿl_·ge_add»ss
  == 0) {
 
-270 if(
+295 if(
 ±r_ál_cÚ‹xt
 ->
 Ï‹¡_block
@@ -4185,7 +4319,7 @@ li¡_blocks
 Ä_ä“_·ges
  == 0){
 
-272 
+297 
 ±r_”a£_block
  = 
 	`ssdmgmt_g‘_ä“_block
@@ -4193,25 +4327,25 @@ li¡_blocks
 ±r_ssd
 , 0, 0);
 
-274 
+299 
 Ä_®l_u£d_block
  = 0;
 
-275 
+300 
 is_®l_u£d
 ;
 
-276 
+301 
 found_ä“_·ge
  = 0;
 
-277 ià(
+302 ià(
 ±r_”a£_block
  =ğ
 NULL
 ) {
 
-278 
+303 
 i
  = 0 ; i < 
 ±r_ssd
@@ -4219,7 +4353,7 @@ i
 Ä_bu£s
 ; i++) {
 
-279 
+304 
 j
  = 0; j < 
 ±r_ssd
@@ -4227,7 +4361,7 @@ j
 Ä_chs_³r_bus
 ; j++) {
 
-280 
+305 
 m
  = 0; m < 
 ±r_ssd
@@ -4235,7 +4369,7 @@ m
 Ä_blocks_³r_ch
 ; m++) {
 
-281 
+306 
 ±r_”a£_block
  = &
 ±r_ssd
@@ -4253,11 +4387,11 @@ li¡_blocks
 m
 ];
 
-282 
+307 
 is_®l_u£d
  = 0;
 
-283 
+308 
 n
  = 0;‚ < 
 ±r_ssd
@@ -4265,7 +4399,7 @@ n
 Ä_·ges_³r_block
 ;‚++) {
 
-284 ià(
+309 ià(
 ±r_”a£_block
 ->
 li¡_·ges
@@ -4277,59 +4411,59 @@ n
 PAGE_STATUS_FREE
 ) {
 
-285 ià(
+310 ià(
 found_ä“_·ge
  == 0) {
 
-286 *
+311 *
 ±r_bus
  = 
 i
 ;
 
-287 *
+312 *
 ±r_ch
  = 
 j
 ;
 
-288 *
+313 *
 ±r_block
  = 
 m
 ;
 
-289 *
+314 *
 ±r_·ge
  = 
 n
 ;
 
-292 
+317 
 is_®l_u£d
  = 0;
 
-293 
+318 
 found_ä“_·ge
  = 1;
 
-295 
+320 
 is_®l_u£d
  = 1;
 
-298 ià(
+323 ià(
 is_®l_u£d
  == 1)
 
-299 
+324 
 Ä_®l_u£d_block
 ++;
 
-301 ià(
+326 ià(
 found_ä“_·ge
  == 1) {
 
-311 *
+336 *
 ±r_bus
  = 
 ±r_”a£_block
@@ -4337,7 +4471,7 @@ found_ä“_·ge
 no_bus
 ;
 
-312 *
+337 *
 ±r_ch
  = 
 ±r_”a£_block
@@ -4345,7 +4479,7 @@ no_bus
 no_ch
 ;
 
-313 *
+338 *
 ±r_block
  = 
 ±r_”a£_block
@@ -4353,11 +4487,11 @@ no_ch
 no_block
 ;
 
-314 *
+339 *
 ±r_·ge
  = 0;
 
-316 
+341 
 ±r_ál_cÚ‹xt
 ->
 Ï‹¡_bus
@@ -4365,7 +4499,7 @@ no_block
 ±r_bus
 ;
 
-317 
+342 
 ±r_ál_cÚ‹xt
 ->
 Ï‹¡_ch
@@ -4373,7 +4507,7 @@ no_block
 ±r_ch
 ;
 
-318 
+343 
 ±r_ál_cÚ‹xt
 ->
 Ï‹¡_block
@@ -4381,7 +4515,7 @@ no_block
 ±r_block
 ;
 
-321 
+346 
 ±r_”a£_block
  = &
 ±r_ssd
@@ -4401,7 +4535,7 @@ li¡_blocks
 Ï‹¡_block
 ];
 
-322 
+347 
 loİ_·ge
  = 0;†oİ_·g< 
 ±r_ssd
@@ -4409,7 +4543,7 @@ loİ_·ge
 Ä_·ges_³r_block
 ;†oop_page++) {
 
-323 ià(
+348 ià(
 ±r_”a£_block
 ->
 li¡_·ges
@@ -4421,7 +4555,7 @@ loİ_·ge
 PAGE_STATUS_FREE
 ) {
 
-324 *
+349 *
 ±r_bus
  = 
 ±r_”a£_block
@@ -4429,7 +4563,7 @@ PAGE_STATUS_FREE
 no_bus
 ;
 
-325 *
+350 *
 ±r_ch
  = 
 ±r_”a£_block
@@ -4437,7 +4571,7 @@ no_bus
 no_ch
 ;
 
-326 *
+351 *
 ±r_block
  = 
 ±r_”a£_block
@@ -4445,65 +4579,65 @@ no_ch
 no_block
 ;
 
-327 *
+352 *
 ±r_·ge
  = 
 loİ_·ge
 ;
 
-339 
+364 
 	}
 }
 
-343 
+368 
 št32_t
  
 	$·ge_m­pšg_m­_logiÿl_to_physiÿl
  (
 
-344 
+369 
 ál_cÚ‹xt_t
 * 
 ±r_ál_cÚ‹xt
 ,
 
-345 
+370 
 ušt32_t
  
 logiÿl_·ge_add»ss
 ,
 
-346 
+371 
 ušt32_t
  
 bus
 ,
 
-347 
+372 
 ušt32_t
  
 ch
 ,
 
-348 
+373 
 ušt32_t
  
 block
 ,
 
-349 
+374 
 ušt32_t
  
 ·ge
 )
 
-351 
+376 
 æash_block_t
 * 
 ±r_”a£_block
 ;
 
-352 
+377 
 æash_ssd_t
 * 
 ±r_ssd
@@ -4511,7 +4645,7 @@ ušt32_t
 ±r_ál_cÚ‹xt
 ->ptr_ssd;
 
-353 
+378 
 ál_·ge_m­pšg_cÚ‹xt_t
 * 
 ±r_pg_m­pšg
@@ -4521,19 +4655,19 @@ ušt32_t
 ±r_m­pšg
 ;
 
-355 
+380 
 ušt32_t
  
 physiÿl_·ge_add»ss
 ;
 
-357 
+382 
 št32_t
  
 »t
  = 0;
 
-359 
+384 
 physiÿl_·ge_add»ss
  = 
 ±r_pg_m­pšg
@@ -4543,13 +4677,13 @@ physiÿl_·ge_add»ss
 logiÿl_·ge_add»ss
 ];
 
-362 ià(
+387 ià(
 physiÿl_·ge_add»ss
  =ğ
 PAGE_TABLE_FREE
 ) {
 
-363 
+388 
 physiÿl_·ge_add»ss
  = 
 	`ál_cÚv”t_to_physiÿl_·ge_add»ss
@@ -4563,7 +4697,7 @@ block
 ·ge
 );
 
-366 
+391 
 ±r_pg_m­pšg
 ->
 ±r_pg_bË
@@ -4573,7 +4707,7 @@ logiÿl_·ge_add»ss
 physiÿl_·ge_add»ss
 ;
 
-371 
+396 
 ±r_”a£_block
  = &
 ±r_ssd
@@ -4591,7 +4725,7 @@ li¡_blocks
 block
 ];
 
-372 ià(
+397 ià(
 ±r_”a£_block
 ->
 li¡_·ges
@@ -4603,7 +4737,7 @@ li¡_·ges
 PAGE_STATUS_FREE
 ) {
 
-374 
+399 
 ±r_”a£_block
 ->
 li¡_·ges
@@ -4615,19 +4749,19 @@ li¡_·ges
 PAGE_STATUS_VALID
 ;
 
-378 
+403 
 ±r_”a£_block
 ->
 Ä_v®id_·ges
 ++;
 
-379 
+404 
 ±r_”a£_block
 ->
 Ä_ä“_·ges
 --;
 
-381 
+406 
 physiÿl_·ge_add»ss
  = 
 	`ál_cÚv”t_to_physiÿl_·ge_add»ss
@@ -4641,7 +4775,7 @@ block
 ·ge
 );
 
-382 
+407 
 ±r_pg_m­pšg
 ->
 ±r_pg_bË
@@ -4651,15 +4785,15 @@ logiÿl_·ge_add»ss
 physiÿl_·ge_add»ss
 ;
 
-384 
+409 
 »t
  = 0;
 
-387 
+412 
 	`´štf
  ("blueftl_mapping_page:he…hysical…age‡ddress is‡lready used (%u:%u,%u,%u,%u)\n",
 
-388 
+413 
 physiÿl_·ge_add»ss
 , 
 bus
@@ -4671,15 +4805,15 @@ block
 ·ge
 );
 
-389 
+414 
 »t
  = -1;
 
-392  
+417  
 »t
 ;
 
-393 
+418 
 	}
 }
 
@@ -4708,22 +4842,60 @@ _BLUESSD_FTL_PAGE
 ;
 
 9 
-	sál_·ge_m­pšg_cÚ‹xt_t
+	sál_chunk_bË_’Œy_t
  {
 
 10 
+št32_t
+ 
+	mphyscŸl_·ge_add»ss
+;
+
+11 
+št32_t
+ 
+	mÄ_·ges
+;
+
+12 
+št32_t
+ 
+	mis_com´es£d
+;
+
+15 
+	sál_chunk_bË_cÚ‹xt_t
+ {
+
+16 
+ušt32_t
+ 
+	mÄ_chunk_bË_’Œ›s
+;
+
+17 
+ál_chunk_bË_’Œy_t
+* 
+	m±r_chunks
+;
+
+20 
+	sál_·ge_m­pšg_cÚ‹xt_t
+ {
+
+21 
 ušt32_t
  
 	mÄ_pg_bË_’Œ›s
 ;
 
-12 
+23 
 ušt32_t
 * 
 	m±r_pg_bË
 ;
 
-16 
+27 
 ál_cÚ‹xt_t
 * 
 ·ge_m­pšg_ü—‹_ál_cÚ‹xt
@@ -4733,7 +4905,7 @@ vœtu®_deviû_t
 ±r_vdeviû
 );
 
-19 
+30 
 ·ge_m­pšg_de¡roy_ál_cÚ‹xt
  (
 ál_cÚ‹xt_t
@@ -4741,127 +4913,127 @@ vœtu®_deviû_t
 ±r_ál_cÚ‹xt
 );
 
-22 
+33 
 št32_t
  
 ·ge_m­pšg_g‘_m­³d_physiÿl_·ge_add»ss
  (
 
-23 
+34 
 ál_cÚ‹xt_t
 * 
 ±r_ál_cÚ‹xt
-,
-
-24 
-ušt32_t
- 
-logiÿl_·ge_add»ss
-,
-
-25 
-ušt32_t
- *
-±r_bus
-,
-
-26 
-ušt32_t
- *
-±r_ch
-,
-
-27 
-ušt32_t
- *
-±r_block
-,
-
-28 
-ušt32_t
- *
-±r_·ge
-);
-
-31 
-št32_t
- 
-·ge_m­pšg_g‘_ä“_physiÿl_·ge_add»ss
- (
-
-32 
-ál_cÚ‹xt_t
-* 
-±r_ál_cÚ‹xt
-,
-
-33 
-ušt32_t
- 
-logiÿl_·ge_add»ss
-,
-
-34 
-ušt32_t
- *
-±r_bus
 ,
 
 35 
 ušt32_t
- *
-±r_ch
+ 
+logiÿl_·ge_add»ss
 ,
 
 36 
 ušt32_t
  *
-±r_block
+±r_bus
 ,
 
 37 
 ušt32_t
  *
+±r_ch
+,
+
+38 
+ušt32_t
+ *
+±r_block
+,
+
+39 
+ušt32_t
+ *
 ±r_·ge
 );
 
-40 
+42 
 št32_t
  
-·ge_m­pšg_m­_logiÿl_to_physiÿl
+·ge_m­pšg_g‘_ä“_physiÿl_·ge_add»ss
  (
 
-41 
+43 
 ál_cÚ‹xt_t
 * 
 ±r_ál_cÚ‹xt
 ,
 
-42 
+44 
 ušt32_t
  
 logiÿl_·ge_add»ss
 ,
 
-43 
+45 
+ušt32_t
+ *
+±r_bus
+,
+
+46 
+ušt32_t
+ *
+±r_ch
+,
+
+47 
+ušt32_t
+ *
+±r_block
+,
+
+48 
+ušt32_t
+ *
+±r_·ge
+);
+
+51 
+št32_t
+ 
+·ge_m­pšg_m­_logiÿl_to_physiÿl
+ (
+
+52 
+ál_cÚ‹xt_t
+* 
+±r_ál_cÚ‹xt
+,
+
+53 
+ušt32_t
+ 
+logiÿl_·ge_add»ss
+,
+
+54 
 ušt32_t
  
 bus
 ,
 
-44 
+55 
 ušt32_t
  
 ch
 ,
 
-45 
+56 
 ušt32_t
  
 block
 ,
 
-46 
+57 
 ušt32_t
  
 ·ge
@@ -5389,7 +5561,17 @@ ušt32_t
 »t
 ;
 
-60 ià(
+61 
+ál_wr™e_bufãr_t
+ * 
+±r_ál_wr™e_buff
+ = 
+_±r_ál_cÚ‹xt
+->
+±r_wr™e_buff
+;
+
+64 ià(
 _±r_vdeviû
  =ğ
 NULL
@@ -5397,11 +5579,11 @@ NULL
 blueál_ch¬_h
  == -1) {
 
-61 
+65 
 	`´štf
  ("blueftl_user_ftl_main:he character device driver is‚ot initialized\n");
 
-65 
+69 
 Ía_begš
  = 
 lba_begš
@@ -5411,7 +5593,7 @@ _±r_vdeviû
 ·ge_maš_size
 ;
 
-66 
+70 
 Ía_’d
  = 
 Ía_begš
@@ -5423,19 +5605,19 @@ _±r_vdeviû
 ·ge_maš_size
 );
 
-68 
+73 
 »q_dœ
 ) {
 
-69 
+74 
 NETLINK_READA
 :
 
-70 
+75 
 NETLINK_READ
 :
 
-71 
+76 
 Ía_cu¼
  = 
 Ía_begš
@@ -5443,7 +5625,7 @@ NETLINK_READ
 Ía_’d
 ;†pa_curr++) {
 
-73 
+78 
 ušt32_t
  
 bus
@@ -5455,7 +5637,7 @@ ch
 block
 ;
 
-74 
+79 
 ušt8_t
 * 
 ±r_lba_buff
@@ -5463,7 +5645,7 @@ ušt8_t
 ±r_bufãr
  +
 
-75 ((
+80 ((
 Ía_cu¼
  - 
 Ía_begš
@@ -5473,13 +5655,13 @@ _±r_vdeviû
 ·ge_maš_size
 );
 
-77 ià(
+82 ià(
 _ál_ba£
 .
 	`ál_g‘_m­³d_physiÿl_·ge_add»ss
  (
 
-78 
+83 
 _±r_ál_cÚ‹xt
 , 
 Ía_cu¼
@@ -5493,15 +5675,15 @@ block
 ·ge
 ) == 0) {
 
-79 
+84 
 	`blueál_u£r_vdeviû_·ge_»ad
  (
 
-80 
+85 
 _±r_vdeviû
 ,
 
-81 
+86 
 bus
 , 
 ch
@@ -5511,21 +5693,21 @@ block
 ·ge
 ,
 
-82 
+87 
 _±r_vdeviû
 ->
 ·ge_maš_size
 ,
 
-83 (*)
+88 (*)
 ±r_lba_buff
 );
 
-91 
+96 
 NETLINK_WRITE
 :
 
-92 
+97 
 Ía_cu¼
  = 
 Ía_begš
@@ -5533,7 +5715,7 @@ NETLINK_WRITE
 Ía_’d
 ;†pa_curr++) {
 
-93 
+98 
 ušt32_t
  
 bus
@@ -5545,7 +5727,7 @@ block
 ·ge
 ;
 
-94 
+99 
 ušt8_t
 * 
 ±r_lba_buff
@@ -5553,7 +5735,7 @@ ušt8_t
 ±r_bufãr
  +
 
-95 ((
+100 ((
 Ía_cu¼
  - 
 Ía_begš
@@ -5563,19 +5745,117 @@ _±r_vdeviû
 ·ge_maš_size
 );
 
-96 
+101 
+ušt8_t
+* 
+±r_·ge_buff
+ = 
+NULL
+;
+
+102 
 ušt8_t
  
 is_m”ge_Ãeded
  = 0;
 
-99 ià(
+105 if(
+±r_ál_wr™e_buff
+->
+Ä_·ges
+ < 4) {
+
+106 
+±r_·ge_buff
+ = 
+±r_ál_wr™e_buff
+->
+wr™e_buff
+ +…Œ_ál_wr™e_buff->
+Ä_·ges
+ * 
+_±r_vdeviû
+->
+·ge_maš_size
+;
+
+107 
+	`memıy
+(
+±r_lba_buff
+, 
+±r_·ge_buff
+, 
+_±r_vdeviû
+->
+·ge_maš_size
+);
+
+108 
+±r_ál_wr™e_buff
+->
+Ías_š_buff
+[±r_ál_wr™e_buff->
+Ä_·ges
+] = 
+Ía_cu¼
+;
+
+109 
+±r_ál_wr™e_buff
+->
+Ä_·ges
+++;
+
+112 
+ušt8_t
+* 
+ouut
+ = 
+NULL
+;
+
+113 
+ušt8_t
+* 
+šput
+ = 
+±r_ál_wr™e_buff
+->
+wr™e_buff
+;
+
+114 
+št32_t
+ 
+size
+ = 
+	`com´ess
+(
+šput
+, (*
+±r_ál_wr™e_buff
+->
+wr™e_buff
+),
+ouut
+);
+
+115 if(
+size
+ == -1) {
+
+116 
+	`´štf
+("compressƒrror\n");
+
+124 ià(
 _ál_ba£
 .
 	`ál_g‘_ä“_physiÿl_·ge_add»ss
  (
 
-100 
+125 
 _±r_ál_cÚ‹xt
 , 
 Ía_cu¼
@@ -5589,7 +5869,7 @@ block
 ·ge
 ) == -1) {
 
-102 ià(
+127 ià(
 _ál_ba£
 .
 ál_Œigg”_gc
@@ -5597,7 +5877,7 @@ _ál_ba£
 NULL
 ) {
 
-104 ià(
+129 ià(
 _ál_ba£
 .
 	`ál_Œigg”_gc
@@ -5609,25 +5889,25 @@ bus
 ch
 ) == -1) {
 
-105 
+130 
 	`´štf
  ("bluessd: oops! garbage collection failed.\n");
 
-106 
+131 
 »t
  = -1;
 
-107 
+132 
 çed
 ;
 
-111 ià(
+136 ià(
 _ál_ba£
 .
 	`ál_g‘_ä“_physiÿl_·ge_add»ss
  (
 
-112 
+137 
 _±r_ál_cÚ‹xt
 , 
 Ía_cu¼
@@ -5641,19 +5921,19 @@ block
 ·ge
 ) == -1) {
 
-113 
+138 
 	`´štf
  ("bluessd:here is‚ot sufficient space in flash memory.\n");
 
-114 
+139 
 »t
  = -1;
 
-115 
+140 
 çed
 ;
 
-119 } ià(
+144 } ià(
 _ál_ba£
 .
 ál_Œigg”_m”ge
@@ -5661,109 +5941,13 @@ _ál_ba£
 NULL
 ) {
 
-122 
+147 
 is_m”ge_Ãeded
  = 1;
 
-124 
-	`´štf
- ("bluessd: garbage collection is‚ot„egistered\n");
-
-125 
-»t
- = -1;
-
-126 
-çed
-;
-
-130 ià(
-is_m”ge_Ãeded
- == 0) {
-
-132 
-	`blueál_u£r_vdeviû_·ge_wr™e
- (
-
-133 
-_±r_vdeviû
-,
-
-134 
-bus
-, 
-ch
-, 
-block
-, 
-·ge
-,
-
-135 
-_±r_vdeviû
-->
-·ge_maš_size
-,
-
-136 (*)
-±r_lba_buff
-);
-
-139 ià(
-_ál_ba£
-.
-	`ál_m­_logiÿl_to_physiÿl
- (
-
-140 
-_±r_ál_cÚ‹xt
-, 
-Ía_cu¼
-, 
-bus
-, 
-ch
-, 
-block
-, 
-·ge
-) == -1) {
-
-141 
-	`´štf
- ("bluessd: map_logical_to_physical failed\n");
-
-142 
-»t
- = -1;
-
-143 
-çed
-;
-
-147 ià(
-_ál_ba£
-.
-	`ál_Œigg”_m”ge
- (
-
-148 
-_±r_ál_cÚ‹xt
-, 
-Ía_cu¼
-, 
-±r_lba_buff
-, 
-bus
-, 
-ch
-, 
-block
-) == -1) {
-
 149 
 	`´štf
- ("bluessd: block merge failed\n");
+ ("bluessd: garbage collection is‚ot„egistered\n");
 
 150 
 »t
@@ -5773,33 +5957,129 @@ block
 çed
 ;
 
+155 ià(
+is_m”ge_Ãeded
+ == 0) {
+
+157 
+	`blueál_u£r_vdeviû_·ge_wr™e
+ (
+
 158 
+_±r_vdeviû
+,
+
+159 
+bus
+, 
+ch
+, 
+block
+, 
+·ge
+,
+
+160 
+_±r_vdeviû
+->
+·ge_maš_size
+,
+
+161 (*)
+±r_lba_buff
+);
+
+164 ià(
+_ál_ba£
+.
+	`ál_m­_logiÿl_to_physiÿl
+ (
+
+165 
+_±r_ál_cÚ‹xt
+, 
+Ía_cu¼
+, 
+bus
+, 
+ch
+, 
+block
+, 
+·ge
+) == -1) {
+
+166 
+	`´štf
+ ("bluessd: map_logical_to_physical failed\n");
+
+167 
+»t
+ = -1;
+
+168 
+çed
+;
+
+172 ià(
+_ál_ba£
+.
+	`ál_Œigg”_m”ge
+ (
+
+173 
+_±r_ál_cÚ‹xt
+, 
+Ía_cu¼
+, 
+±r_lba_buff
+, 
+bus
+, 
+ch
+, 
+block
+) == -1) {
+
+174 
+	`´štf
+ ("bluessd: block merge failed\n");
+
+175 
+»t
+ = -1;
+
+176 
+çed
+;
+
+183 
 	`´štf
  ("bluessd: inv®id I/Oy³ (%u)\n", 
 »q_dœ
 );
 
-159 
+184 
 »t
  = -1;
 
-160 
+185 
 çed
 ;
 
-163 
+188 
 »t
  = 0;
 
-165 
+190 
 çed
 :
 
-167  
+192  
 »t
 ;
 
-168 
+193 
 	}
 }
 

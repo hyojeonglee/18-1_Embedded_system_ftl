@@ -44,6 +44,7 @@ struct ftl_context_t* page_mapping_create_ftl_context (
 	struct ftl_context_t* ptr_ftl_context = NULL;
 	struct flash_ssd_t* ptr_ssd = NULL;
 	struct ftl_page_mapping_context_t* ptr_pg_mapping = NULL;
+	struct ftl_chunk_table_context_t* ptr_chunk_table = NULL;
 
 	/* create the ftl context */
 	/*if ((ptr_ftl_context = (struct ftl_context_t*)kmalloc (sizeof (struct ftl_context_t), GFP_ATOMIC)) == NULL) {*/
@@ -90,6 +91,8 @@ struct ftl_context_t* page_mapping_create_ftl_context (
 	ptr_ssd = ptr_ftl_context->ptr_ssd;
 	ptr_pg_mapping = (struct ftl_page_mapping_context_t *)ptr_ftl_context->ptr_mapping;
 
+
+
 	/* TODO: implement block-level > page-level FTL */
 
 	/* TODO is this right? */
@@ -105,6 +108,22 @@ struct ftl_context_t* page_mapping_create_ftl_context (
 	/* Initialize */
 	for (init_pg_loop = 0; init_pg_loop < ptr_pg_mapping->nr_pg_table_entries; init_pg_loop++) {
 		ptr_pg_mapping->ptr_pg_table[init_pg_loop] = PAGE_TABLE_FREE;
+	}
+
+	/*add by charlie: chunk table*/
+	ptr_chunk_table = (struct ftl_chunk_table_context_t *)ptr_ftl_context->ptr_chunk_table;
+	
+	ptr_chunk_table->nr_chunk_table_entries =  ptr_ssd->nr_buses * ptr_ssd->nr_chips_per_bus * ptr_ssd->nr_blocks_per_chip * ptr_ssd->nr_pages_per_block; // TODO modify ? */
+
+	if ((ptr_chunk_table->ptr_chunks = (struct ftl_chunk_table_entry_t*)malloc (ptr_chunk_table->nr_chunk_table_entries * sizeof (struct ftl_chunk_table_entry_t))) == NULL) {
+		printf ("blueftl_mapping_page: failed to allocate the memory for ptr_mapping_table\n");
+		goto error_alloc_mapping_table;
+	}
+
+	for (init_pg_loop = 0; init_pg_loop < ptr_chunk_table->nr_chunk_table_entries; init_pg_loop++) {
+		ptr_chunk_table->ptr_chunks[init_pg_loop].physical_page_address = -1;
+		ptr_chunk_table->ptr_chunks[init_pg_loop].nr_pages = 0;
+		ptr_chunk_table->ptr_chunks[init_pg_loop].is_compressed = 0;
 	}
 
 	/* TODO: end */
