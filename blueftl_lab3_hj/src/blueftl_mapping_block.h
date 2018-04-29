@@ -8,6 +8,7 @@ extern struct ftl_base_t ftl_base_block_mapping;
 struct ftl_block_mapping_context_t {
 	uint32_t nr_blk_table_entries;	/* the number of blocks that belong to the block mapping table */
 	uint32_t* ptr_blk_table; /* for the block mapping */
+	struct chunk_table_t* ptr_chunk_table;
 };
 
 /* create the block mapping table */

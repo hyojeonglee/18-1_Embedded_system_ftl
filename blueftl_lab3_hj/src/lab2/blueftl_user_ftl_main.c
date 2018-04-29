@@ -11,7 +11,7 @@
 #include "blueftl_mapping_page.h"
 #include "blueftl_gc_page.h"
 #include "blueftl_char.h"
-#include "blueftl_read_write_mgr.h"
+
 
 struct ftl_base_t _ftl_base;
 struct ftl_context_t* _ptr_ftl_context = NULL;
@@ -36,11 +36,6 @@ int32_t blueftl_user_ftl_create (struct ssd_params_t* ptr_ssd_params)
 		return -1;
 	}
 
-	if (blueftl_read_write_mgr_init(_ptr_vdevice->page_main_size) == NULL) {
-		printf("blueftl_read_write_mgr_init: the creation of the write page buff failed");
-		return -1;
-	}
-
 	return 0;
 }
 
@@ -51,8 +46,6 @@ void blueftl_user_ftl_destroy (struct virtual_device_t* _ptr_vdevice)
 
 	/* destroy the user-level FTL */
 	_ftl_base.ftl_destroy_ftl_context (_ptr_ftl_context);
-
-	blueftl_read_write_mgr_close();
 }
 
 /* ftl entry point */
@@ -84,8 +77,6 @@ int32_t blueftl_user_ftl_main (
 				uint8_t* ptr_lba_buff = ptr_buffer + 
 					((lpa_curr - lpa_begin) * _ptr_vdevice->page_main_size);
 
-				blueftl_page_read(_ftl_base, _ptr_ftl_context, lpa_curr, ptr_lba_buff);
-#if 0
 				if (_ftl_base.ftl_get_mapped_physical_page_address (
 						_ptr_ftl_context, lpa_curr, &bus, &chip, &block, &page) == 0) {
 					blueftl_user_vdevice_page_read (
@@ -97,7 +88,6 @@ int32_t blueftl_user_ftl_main (
 					/* the requested logical page is not mapped to any physical page */
 					/* simply ignore */
 				}
-#endif
 			}
 			break;
 
@@ -106,12 +96,6 @@ int32_t blueftl_user_ftl_main (
 				uint32_t bus = 0, chip = 0, block = 0, page = 0;
 				uint8_t* ptr_lba_buff = ptr_buffer + 
 					((lpa_curr - lpa_begin) * _ptr_vdevice->page_main_size);
-
-				if ((ret=blueftl_page_write(_ftl_base, _ptr_ftl_context, lpa_curr, ptr_lba_buff)) == -1) {
-					goto failed;
-				}
-
-#if 0
 				uint8_t is_merge_needed = 0;
 				
 				/* get the new physical page address from the FTL */
@@ -171,8 +155,7 @@ int32_t blueftl_user_ftl_main (
 						goto failed;
 					}
 				}
-#endif
-			} 
+			}
 			break;
 
 		default:
@@ -184,6 +167,6 @@ int32_t blueftl_user_ftl_main (
 	ret = 0;
 
 failed:
-	// blueftl_user_vdevice_req_done (_ptr_vdevice);
+	blueftl_user_vdevice_req_done (_ptr_vdevice);
 	return ret;
 }
