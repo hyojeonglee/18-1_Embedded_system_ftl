@@ -6,11 +6,6 @@
 
 extern struct ftl_base_t ftl_base_page_mapping;
 
-struct ftl_chunk_table_context_t {
-	uint32_t physcial_page_
-
-}
-
 struct ftl_page_mapping_context_t {
 	uint32_t nr_pg_table_entries;	/* the number of pages that belong to the page mapping table */
 	/* TODO needs nr_blk_table_entries? */

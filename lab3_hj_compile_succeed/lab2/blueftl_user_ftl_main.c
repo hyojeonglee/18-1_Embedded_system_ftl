@@ -7,7 +7,9 @@
 #include "blueftl_user_vdevice.h"
 #include "blueftl_util.h"
 #include "blueftl_ftl_base.h"
+#include "blueftl_mapping_block.h"
 #include "blueftl_mapping_page.h"
+#include "blueftl_gc_page.h"
 #include "blueftl_char.h"
 
 
@@ -23,7 +25,8 @@ int32_t blueftl_user_ftl_create (struct ssd_params_t* ptr_ssd_params)
 		return -1;
 	}
 
-	/* map the page mapping functions to _ftl_base */
+	/* TODO: if policy is 1 or 2, then choose mapping policy (ref: blueftl_ftl_base.h) */
+
 	_ftl_base = ftl_base_page_mapping;
 
 	/* initialize the user-level FTL */
@@ -57,10 +60,6 @@ int32_t blueftl_user_ftl_main (
 	uint32_t lpa_curr;
 	int32_t ret;
 
-	/*added by charlie*/
-	struct ftl_write_buffer_t * ptr_ftl_write_buff = _ptr_ftl_context->ptr_write_buff;
-	/*added by charlie end*/
-
 	if (_ptr_vdevice == NULL || _ptr_vdevice->blueftl_char_h == -1) {
 		printf ("blueftl_user_ftl_main: the character device driver is not initialized\n");
 		return -1;
@@ -68,7 +67,6 @@ int32_t blueftl_user_ftl_main (
 
 	lpa_begin = lba_begin / _ptr_vdevice->page_main_size;
 	lpa_end = lpa_begin + (lba_end / _ptr_vdevice->page_main_size);
-	
 
 	switch (req_dir) {
 		case NETLINK_READA:
@@ -95,31 +93,11 @@ int32_t blueftl_user_ftl_main (
 
 		case NETLINK_WRITE:
 			for (lpa_curr = lpa_begin; lpa_curr < lpa_end; lpa_curr++) {
-				uint32_t bus, chip, block, page;
+				uint32_t bus = 0, chip = 0, block = 0, page = 0;
 				uint8_t* ptr_lba_buff = ptr_buffer + 
 					((lpa_curr - lpa_begin) * _ptr_vdevice->page_main_size);
-				uint8_t* ptr_page_buff = NULL;
 				uint8_t is_merge_needed = 0;
-
-				/*fullfill the write buffer; is timeout needed?*/
-				if(ptr_ftl_write_buff->nr_pages < 4) {
-					ptr_page_buff = ptr_ftl_write_buff->write_buff + ptr_ftl_write_buff->nr_pages * _ptr_vdevice->page_main_size;
-					memcpy(ptr_lba_buff, ptr_page_buff, _ptr_vdevice->page_main_size);
-					ptr_ftl_write_buff->lpas_in_buff[ptr_ftl_write_buff->nr_pages] = lpa_curr;
-					ptr_ftl_write_buff->nr_pages++;
-					continue;
-				}else {
-					uint8_t* output = NULL;
-					uint8_t* input = ptr_ftl_write_buff->write_buff;
-					int32_t size = compress(input, sizeof(*ptr_ftl_write_buff->write_buff),output);
-					if(size == -1) {
-						printf("compress error\n");
-						return -1;
-					}else {
-						/*get the physical page address from FTL for output*/
-					}
-				}
-					
+				
 				/* get the new physical page address from the FTL */
 				if (_ftl_base.ftl_get_free_physical_page_address (
 						_ptr_ftl_context, lpa_curr, &bus, &chip, &block, &page) == -1) {
@@ -135,7 +113,8 @@ int32_t blueftl_user_ftl_main (
 						/* garbage collection has been finished; chooses the new free page */
 						if (_ftl_base.ftl_get_free_physical_page_address (
 								_ptr_ftl_context, lpa_curr, &bus, &chip, &block, &page) == -1) {
-							printf ("bluessd: there is not sufficient space in flash memory.\n");
+							printf ("[user ftl main: 116] Wrong!!! can't get free ppa after gc call ");
+							printf ("... bluessd: there is not sufficient space in flash memory.\n");
 							ret = -1;
 							goto failed;
 						}
@@ -145,7 +124,7 @@ int32_t blueftl_user_ftl_main (
 						/* the FTL does not support gc,
 						   so it is necessary to merge the new data with the existing data */
 						is_merge_needed = 1;
-					} else {
+					} else {	
 						printf ("bluessd: garbage collection is not registered\n");
 						ret = -1;
 						goto failed;
@@ -188,6 +167,6 @@ int32_t blueftl_user_ftl_main (
 	ret = 0;
 
 failed:
-	/*blueftl_user_vdevice_req_done (_ptr_vdevice);*/
+	blueftl_user_vdevice_req_done (_ptr_vdevice);
 	return ret;
 }
