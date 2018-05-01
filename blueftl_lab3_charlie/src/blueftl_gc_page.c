@@ -5,7 +5,7 @@
 #include "blueftl_mapping_page.h"
 #include "blueftl_gc_page.h"
 #include "blueftl_util.h"
-#include "blueftl_wl_dual_pool.h"
+// #include "blueftl_wl_dual_pool.h"
 
 #else
 
@@ -19,7 +19,7 @@
 #include "blueftl_gc_page.h"
 #include "blueftl_util.h"
 #include "blueftl_user_vdevice.h"
-#include "blueftl_wl_dual_pool.h"
+// #include "blueftl_wl_dual_pool.h"
 
 #endif
 
@@ -122,7 +122,7 @@ int32_t gc_page_trigger_gc_lab (
 //	printf("after victim %d, with invalid %d, valid %d, free %d\n", ptr_victim_block->no_block, ptr_victim_block->nr_invalid_pages, ptr_victim_block->nr_valid_pages, ptr_victim_block->nr_free_pages);
 
 	/* for wear leveling */
-#if 1
+#if 0
 	check_max_min_nr_erase_cnt(ptr_ftl_context);
 	if (check_cold_data_migration(ptr_ftl_context) == TRUE)
 		cold_data_migration(ptr_ftl_context);

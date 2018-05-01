@@ -8,7 +8,7 @@ UWORD decompress(UBYTE* input, UWORD input_size, UBYTE *output)
 	UBYTE* SCAN = input;
 	UBYTE* DEST = output;
 
-	UBYTE* SCAN_POST = SCAN + input_size;
+	// UBYTE* SCAN_POST = SCAN + input_size;
 	UBYTE* SCAN_MAX16 = SCAN + input_size - (MAX_CMP_GROUP - 2);
 	UBYTE* DEST_POST = DEST + C_SIZE;
 

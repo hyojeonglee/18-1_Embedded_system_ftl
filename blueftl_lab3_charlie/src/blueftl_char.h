@@ -30,6 +30,6 @@ struct blueftl_io_req {
 #define BLUEFTL_CHAR_IOCTL_BIO_DONE		_IOR(BLUEFTL_CHAR_MAJOR_NUM,  0, char)	/* Let kernel konw that the requested bio has done */
 #define BLUEFTL_CHAR_IOCTL_REQ			_IOR(BLUEFTL_CHAR_MAJOR_NUM,  1, struct blueftl_io_req)	/* Normal flash I/O operations, e.g., read, write, and erase */
 #define BLUEFTL_CHAR_IOCTL_TIMEOUT		_IOR(BLUEFTL_CHAR_MAJOR_NUM,  2, long)	/* the period during which we wait for responses from the user-level FTL */
-#define BLUEFTL_CHAR_IOCTL_SEND_DATA	_IOR(_BLUEFTL_CHAR_MAJOR_NUM, 3, char*)
+#define BLUEFTL_CHAR_IOCTL_SEND_DATA	_IOR(BLUEFTL_CHAR_MAJOR_NUM,  3, char*)	
 
 #endif
