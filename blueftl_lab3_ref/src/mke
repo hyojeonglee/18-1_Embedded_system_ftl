@@ -1,0 +1,8 @@
+make clean
+clear
+clear
+make
+echo ""
+./blueftl_user
+#gdb blueftl_user
+
