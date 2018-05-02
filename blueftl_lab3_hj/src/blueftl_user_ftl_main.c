@@ -84,8 +84,6 @@ int32_t blueftl_user_ftl_main (
 				uint8_t* ptr_lba_buff = ptr_buffer + 
 					((lpa_curr - lpa_begin) * _ptr_vdevice->page_main_size);
 
-				blueftl_page_read(_ftl_base, _ptr_ftl_context, lpa_curr, ptr_lba_buff);
-#if 0
 				if (_ftl_base.ftl_get_mapped_physical_page_address (
 						_ptr_ftl_context, lpa_curr, &bus, &chip, &block, &page) == 0) {
 					blueftl_user_vdevice_page_read (
@@ -97,7 +95,6 @@ int32_t blueftl_user_ftl_main (
 					/* the requested logical page is not mapped to any physical page */
 					/* simply ignore */
 				}
-#endif
 			}
 			break;
 

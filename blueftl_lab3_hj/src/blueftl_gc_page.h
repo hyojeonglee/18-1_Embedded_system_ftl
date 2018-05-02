@@ -4,20 +4,15 @@
 #include <linux/types.h>
 #include "blueftl_ftl_base.h"
 
-/* TODO: 아래에서 세번째까지 파라미터도 필요할까? */
-int32_t gc_page_trigger_gc_lab (
-		struct ftl_context_t* ptr_ftl_context,
-		uint32_t gc_target_bus,
-		uint32_t gc_target_chip);
+#define WL_ON 0
 
-/*
-int32_t gc_block_trigger_merge (
-	struct ftl_context_t* ptr_ftl_context, 
-	uint32_t logical_page_address, 
-	uint8_t* ptr_lba_buffer, 
-	uint32_t merge_bus, 
-	uint32_t merge_chip, 
-	uint32_t merge_block);
-*/
+int32_t gc_page_trigger_gc(
+	struct ftl_context_t *ptr_ftl_context, 
+	int32_t gc_target_bus, 
+	int32_t gc_target_chip);
+
+void gc_page_trigger_init(struct ftl_context_t *ptr_ftl_context);
+
+void move_block(struct ftl_context_t *context, struct flash_block_t *src, struct flash_block_t *dest);
 
 #endif

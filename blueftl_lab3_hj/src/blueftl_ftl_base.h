@@ -66,7 +66,9 @@ struct ftl_base_t {
 		uint32_t bus, 
 		uint32_t chip, 
 		uint32_t block, 
-		uint32_t page);
+		uint32_t page,
+		uint32_t nr_pages,
+		uint32_t is_compressed);
 
 	int32_t (*ftl_trigger_gc) (
 		struct ftl_context_t* ptr_ftl_context, 

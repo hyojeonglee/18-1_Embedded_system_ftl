@@ -27,7 +27,8 @@ uint32_t _nr_buff_pages;
 void serialize();
 void deserialize();
 
-int32_t get_free_page(struct ftl_context_t* ptr_ftl_context, 
+int32_t get_free_page(struct ftl_base_t *_ftl_base,
+	struct ftl_context_t* ptr_ftl_context, 
 	uint32_t nr_pages,
 	uint32_t *ptr_bus,
 	uint32_t *ptr_chip,
@@ -119,7 +120,7 @@ uint32_t blueftl_page_write(
         */
         
         /* 1. serialize 후 압축 */
-        serialize();
+        // serialize();
         UWORD compressed_size = compress(_write_buff, sizeof(struct wr_buff_t), _compressed_buff);
         
         if( compressed_size >= FLASH_PAGE_SIZE * WRITE_BUFFER_LEN // 압축했는데 4페이지보다 크거나
@@ -128,7 +129,7 @@ uint32_t blueftl_page_write(
             // 압축 하지 않고 write
             for(i=0; i<WRITE_BUFFER_LEN; i++){
                 /* 2. 페이지 요청 */
-                if(get_free_pages(ptr_ftl_context, 1, &bus, &chip, &block, &page)==-1){
+                if(get_free_pages(&ftl_base, ptr_ftl_context, 1, &bus, &chip, &block, &page)==-1){
                     goto err;
                 }
                 
@@ -153,7 +154,7 @@ uint32_t blueftl_page_write(
             uint32_t nr_compress_pages = compressed_size/FLASH_PAGE_SIZE + compressed_size%FLASH_PAGE_SIZE?1:0;
             uint32_t bus, chip, block, page;
             /* 2. 압축된 페이지 사이즈에 맞게 ftl 페이지 요청 */
-            if(get_free_pages(ptr_ftl_context, nr_compress_pages, &bus, &chip, &block, &page)==-1){
+            if(get_free_pages(&ftl_base, ptr_ftl_context, nr_compress_pages, &bus, &chip, &block, &page)==-1){
                 goto err;
             }
             
@@ -188,26 +189,27 @@ err:
     return -1;
 }
 
-int32_t get_free_pages(struct ftl_context_t* ptr_ftl_context, 
+int32_t get_free_pages(struct ftl_base_t* _ftl_base,
+	struct ftl_context_t* _ptr_ftl_context,	
 	uint32_t nr_pages,
 	uint32_t *ptr_bus,
 	uint32_t *ptr_chip,
 	uint32_t *ptr_block,
 	uint32_t *ptr_page)
 {
-    if(_ftl_base.ftl_get_free_physical_page_address(ptr_ftl_context, nr_pages, ptr_bus, ptr_chip, ptr_block, ptr_page) == -1){
+    if(_ftl_base->ftl_get_free_physical_page_address(_ptr_ftl_context, nr_pages, ptr_bus, ptr_chip, ptr_block, ptr_page) == -1){
         /* 구현:: 공간 없음. GC 요청, page_mapping_get_free_physical_page_address 재시도, 안되면 에러*/
-        if (_ftl_base.ftl_trigger_gc != NULL) {
+        if (_ftl_base->ftl_trigger_gc != NULL) {
             
             /* GC */
-            if(_ftl_base.ftl_trigger_gc(_ptr_ftl_context, 0, 0) == -1) {
+            if(_ftl_base->ftl_trigger_gc(_ptr_ftl_context, 0, 0) == -1) {
                 printf("bluessd: oops! garbage collection failed.\n");
                 goto err;
             }
 
             /* 페이지요청 재시도 */
-            if(_ftl_base.ftl_get_free_physical_page_address(
-                ptr_ftl_context, nr_pages, ptr_bus, ptr_chip, ptr_block, ptr_page) == -1
+            if(_ftl_base->ftl_get_free_physical_page_address(
+                _ptr_ftl_context, nr_pages, ptr_bus, ptr_chip, ptr_block, ptr_page) == -1
             ){
                 printf("bluessd: there is not sufficient space in flash memory.\n");
                 goto err;
