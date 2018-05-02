@@ -120,7 +120,7 @@ uint32_t blueftl_page_write(
         */
         
         /* 1. serialize 후 압축 */
-        // serialize();
+        serialize();
         UWORD compressed_size = compress(_write_buff, sizeof(struct wr_buff_t), _compressed_buff);
         
         if( compressed_size >= FLASH_PAGE_SIZE * WRITE_BUFFER_LEN // 압축했는데 4페이지보다 크거나
