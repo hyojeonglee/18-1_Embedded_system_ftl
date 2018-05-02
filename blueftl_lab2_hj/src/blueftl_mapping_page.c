@@ -358,6 +358,7 @@ int32_t page_mapping_map_logical_to_physical (
 	/* see if the given logical page is alreay mapped or not */
 	if (physical_page_address == PAGE_TABLE_FREE) {
 		physical_page_address = ftl_convert_to_physical_page_address (bus, chip, block, page);
+		printf("%u, %u, %u, %u,%u\n", physical_page_address, bus,chip, block, page);
 
 		/* update the page mapping table */
 		ptr_pg_mapping->ptr_pg_table[logical_page_address] = physical_page_address;
