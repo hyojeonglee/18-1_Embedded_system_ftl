@@ -21,6 +21,7 @@
 #include "blueftl_mapping_page.h"
 #include "blueftl_gc_page.h"
 #include "blueftl_util.h"
+#include "blueftl_read_write_mgr.h"
 
 #endif
 
@@ -68,18 +69,6 @@ struct ftl_context_t* page_mapping_create_ftl_context (
 	/* set virtual device */
 	ptr_ftl_context->ptr_vdevice = ptr_vdevice;
 
-	/*create write buffer*/
-	if((ptr_ftl_context->ptr_write_buff = (struct ftl_write_buffer_t *)malloc(sizeof(struct ftl_write_buffer_t))) == NULL) {
-		printf("blueftl_mapping_page: the creation of the ftl context failed\n");
-		goto error_alloc_ftl_page_mapping_context;
-	}
-
-	if((ptr_ftl_context->ptr_write_buff->write_buff = (uint8_t *)malloc(COMP_WRITE_BUFF_SIZE * ptr_vdevice->page_main_size)) == NULL){
-		printf("blueftl_mapping_page: the creation of the ftl context failed\n");
-		goto error_alloc_ftl_page_mapping_context;
-	}
-
-	ptr_ftl_context->ptr_write_buff->nr_pages = 0;
 	
 	// initialize latest info
 	ptr_ftl_context->latest_chip = -1;
@@ -102,9 +91,17 @@ struct ftl_context_t* page_mapping_create_ftl_context (
 		goto error_alloc_mapping_table;
 	}
 
-	/* Initialize */
+	/* Initialize chunk table and mapping table */
+	if ((ptr_pg_mapping->ptr_chunk_table = (struct chunk_table_t*)malloc(ptr_pg_mapping->nr_pg_table_entries * sizeof(struct chunk_table_t*))) == NULL) {
+		printf ("blueftl_mapping_page: failed to allocate the memory for ptr_chunk_table\n");
+		goto error_alloc_chunk_table;
+	}
+
 	for (init_pg_loop = 0; init_pg_loop < ptr_pg_mapping->nr_pg_table_entries; init_pg_loop++) {
 		ptr_pg_mapping->ptr_pg_table[init_pg_loop] = PAGE_TABLE_FREE;
+		ptr_pg_mapping->ptr_chunk_table[init_pg_loop].valid_cnt = 0;
+		ptr_pg_mapping->ptr_chunk_table[init_pg_loop].physical_page_cnt = 0;
+		ptr_pg_mapping->ptr_chunk_table[init_pg_loop].is_compressed = 0;
 	}
 
 	/* TODO: end */
@@ -125,6 +122,9 @@ error_create_ssd_context:
 
 error_alloc_ftl_context:
 	return NULL;
+
+error_alloc_chunk_table:
+	free (((struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping)->ptr_pg_table);
 }
 
 /* destroy the page mapping table */
@@ -344,16 +344,123 @@ int32_t page_mapping_get_free_physical_page_address (
 	return -1;
 }
 
+void clear_prev_ppa(
+		struct ftl_context_t *ptr_ftl_context,
+		uint32_t logical_page_address,
+		uint32_t bus,
+		uint32_t chip,
+		uint32_t block,
+		uint32_t page)
+{
+	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
+	struct ftl_page_mapping_context_t* ptr_pg_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
+	struct chunk_table_t* ptr_chunk_table = ((struct ftl_page_mapping_context_t*)ptr_ftl_context)->ptr_chunk_table;
+	struct flash_block_t* old_block;
+	uint32_t rbus, rchip, rblock, rpage;
+	uint32_t new_ppa, old_ppa, i;
+
+	old_ppa = ptr_pg_mapping->ptr_pg_table[logical_page_address];
+	new_ppa = ftl_convert_to_physical_page_address (bus, chip, block, page);
+
+	/* lpa가 업데이트인지, invalidation이 필요한지 확인 */
+	if ((old_ppa != 1) && (new_ppa != old_ppa)) {
+		ptr_chunk_table[old_ppa].valid_cnt--;
+		
+		/* valid한 페이지가 없을 경우 압축된 모든 페이지를 invalidation */
+		if (ptr_chunk_table[old_ppa].valid_cnt == 0) {
+			ftl_convert_to_ssd_layout(old_ppa, &rbus, &rchip, &rblock, &rpage);
+			old_block = &(ptr_ssd->list_buses[rbus].list_chips[rchip].list_blocks[rblock]);
+			for (i = 0; i < ptr_chunk_table[old_ppa].physical_page_cnt; i++) {
+				old_block->list_pages[rpage + i].page_status = PAGE_STATUS_INVALID;
+				old_block->list_pages[rpage + i].no_logical_page_addr = -1;
+				old_block->nr_valid_pages--;
+				old_block->nr_invalid_pages++;
+			}
+		}
+	}
+}
+
+int32_t mapping_logical_to_physical(
+		struct ftl_context_t* ptr_ftl_context,
+		uint32_t logical_page_address,
+		uint32_t bus,
+		uint32_t chip, 
+		uint32_t block,
+		uint32_t page)
+{
+	struct flash_block_t* new_block;
+	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
+	struct ftl_page_mapping_context_t* ptr_pg_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
+
+	uint32_t ppa = ftl_convert_to_physical_page_address (bus, chip, block, page);
+	new_block = &(ptr_ssd->list_buses[bus].list_chips[chip].list_blocks[block]);
+
+	uint32_t prev_valid = new_block->nr_valid_pages;
+	uint32_t prev_invalid = new_block->nr_invalid_pages;
+
+	if (new_block->list_pages[page].page_status == PAGE_STATUS_FREE) {
+		new_block->list_pages[page].page_status = PAGE_STATUS_VALID;
+		new_block->list_pages[page].no_logical_page_addr = logical_page_address;
+		new_block->nr_valid_pages++;
+		new_block->nr_free_pages--;
+
+		ptr_pg_mapping->ptr_pg_table[logical_page_address] = ppa;
+	} else {
+		return -1;
+	}
+
+	if (prev_valid == 0 && prev_invalid == 0) {
+		ptr_ssd->list_buses[new_block->no_bus].list_chips[new_block->no_chip].nr_free_blocks--;
+		ptr_ssd->list_buses[new_block->no_bus].list_chips[new_block->no_chip].nr_dirty_blocks++;
+	}
+
+	return 0;
+}
 
 /* map a logical page address to a physical page address */
 int32_t page_mapping_map_logical_to_physical (
 	struct ftl_context_t* ptr_ftl_context, 
-	uint32_t logical_page_address, 
+	uint32_t *logical_page_address, 
 	uint32_t bus,
 	uint32_t chip,
 	uint32_t block,
-	uint32_t page)
+	uint32_t page,
+	uint32_t nr_pages,
+	uint8_t is_compressed)
 {
+	struct chunk_table_t* ptr_chunk_table = ((struct ftl_page_mapping_context_t*)ptr_ftl_context)->ptr_chunk_table;
+	uint32_t ppa = ftl_convert_to_physical_page_address (bus, chip, block, page);
+	uint32_t i;
+
+	if (is_compressed == 1) {
+		for (i = 0; i < WRITE_BUFFER_LEN; i++) {
+			clear_prev_ppa(ptr_ftl_context, logical_page_address[i], bus, chip, block, page + i);
+			if (mapping_logical_to_physical(ptr_ftl_context, logical_page_address[i], bus, chip, block, page + i) == -1)
+				goto err;
+		}
+
+		for (i = 0; i < nr_pages; i++) {
+			ptr_chunk_table[ppa + i].valid_cnt = WRITE_BUFFER_LEN;
+			ptr_chunk_table[ppa + i].physical_page_cnt = nr_pages;
+			ptr_chunk_table[ppa + i].is_compressed = 1;
+		}
+	} else {
+		clear_prev_ppa(ptr_ftl_context, *logical_page_address, bus, chip, block, page);
+		if (mapping_logical_to_physical(ptr_ftl_context, *logical_page_address, bus, chip, block, page) == -1) {
+			goto err;
+		}
+		ptr_chunk_table[ppa].valid_cnt = 1;
+		ptr_chunk_table[ppa].physical_page_cnt = 1;
+		ptr_chunk_table[ppa].is_compressed = 0;
+	}
+	return 0;
+
+err:
+	printf("blueftl_mapping_page: the physical page address is already used (%u:%u,%u,%u,%u)\n", ppa, bus, chip, block, page);
+	return -1;
+
+
+#if 0
 	struct flash_block_t* ptr_erase_block;
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 	struct ftl_page_mapping_context_t* ptr_pg_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
@@ -396,5 +503,6 @@ int32_t page_mapping_map_logical_to_physical (
 	}
 
 	return ret;
+#endif
 }
 

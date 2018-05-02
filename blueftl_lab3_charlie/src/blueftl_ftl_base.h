@@ -16,28 +16,16 @@
 #define WL_POLICY_NONE				1
 #define WL_DUAL_POOL				2
 
-#define COMP_WRITE_BUFF_SIZE		4
-
-struct ftl_write_buffer_t {
-	uint8_t *write_buff;
-	uint32_t nr_pages;
-	uint32_t lpas_in_buff[COMP_WRITE_BUFF_SIZE];
-};
 
 struct ftl_context_t {
 	/* all about SSD */
 	struct flash_ssd_t* ptr_ssd;
 
 	/* private data for a mapping scheme */
-	void* ptr_mapping; 
-	/*private data for chunk table*/
-	void* ptr_chuck_table;
+	void* ptr_mapping;
 
 	/* virtual device */
 	struct virtual_device_t* ptr_vdevice;
-
-	/*write bufer*/
-	struct ftl_write_buffer_t* ptr_write_buff;
 
 	int32_t latest_bus;
 	int32_t latest_chip;
@@ -78,7 +66,9 @@ struct ftl_base_t {
 		uint32_t bus, 
 		uint32_t chip, 
 		uint32_t block, 
-		uint32_t page);
+		uint32_t page,
+		uint32_t nr_pages,
+		uint32_t is_compressed);
 
 	int32_t (*ftl_trigger_gc) (
 		struct ftl_context_t* ptr_ftl_context, 

@@ -3,18 +3,19 @@
 
 #define PAGE_TABLE_FREE	 0
 
-
 extern struct ftl_base_t ftl_base_page_mapping;
 
-struct ftl_chunk_table_context_t {
-	uint32_t physcial_page_
-
-}
+/* for compression */
+struct chunk_table_t {
+	uint8_t valid_cnt;
+	uint8_t physical_page_cnt;
+	uint8_t is_compressed;
+};
 
 struct ftl_page_mapping_context_t {
 	uint32_t nr_pg_table_entries;	/* the number of pages that belong to the page mapping table */
-	/* TODO needs nr_blk_table_entries? */
 	uint32_t* ptr_pg_table; /* for the page mapping */
+	struct chunk_table_t* ptr_chunk_table;
 };
 
 /* create the page mapping table */
@@ -44,10 +45,12 @@ int32_t page_mapping_get_free_physical_page_address (
 /* map a logical page address to a physical page address */
 int32_t page_mapping_map_logical_to_physical (
 	struct ftl_context_t* ptr_ftl_context, 
-	uint32_t logical_page_address, 
+	uint32_t *logical_page_address, 
 	uint32_t bus,
 	uint32_t chip,
 	uint32_t block,
-	uint32_t page);
+	uint32_t page,
+	uint32_t nr_pages,
+	uint8_t is_compressed);
 
 #endif

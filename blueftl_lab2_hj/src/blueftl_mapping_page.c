@@ -157,6 +157,7 @@ int32_t page_mapping_get_mapped_physical_page_address (
 	uint32_t physical_page_address;
 
 	int32_t ret = -1;
+	printf("-S----- %s, logical_page_address %u\n", __func__,logical_page_address);
 
 	/* Get physical page addr and block addr */
 	physical_page_address = ptr_pg_mapping->ptr_pg_table[logical_page_address];
@@ -182,6 +183,7 @@ int32_t page_mapping_get_mapped_physical_page_address (
 		}
 	}
 
+	printf("-E----- %s, ret %d\n", __func__, ret);
 	return ret;
 }
 
@@ -200,6 +202,7 @@ int32_t page_mapping_get_free_physical_page_address (
 	struct flash_page_t* ptr_erase_page;
 
 	uint32_t physical_page_address;
+	printf("-S----- %s, logical_page_address %u\n", __func__,logical_page_address);
 
 	physical_page_address = ptr_pg_mapping->ptr_pg_table[logical_page_address];
 	
