@@ -158,7 +158,7 @@ int32_t blueftl_user_ftl_main (
 	ret = 0;
 
 failed:
-	blueftl_user_vdevice_req_done (_ptr_vdevice);
+	// blueftl_user_vdevice_req_done (_ptr_vdevice);
 	printf(" %s ret %d\n", __func__, ret);
 	return ret;
 }
