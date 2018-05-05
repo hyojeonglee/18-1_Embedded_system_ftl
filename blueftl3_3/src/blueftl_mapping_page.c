@@ -221,7 +221,6 @@ int32_t find_page_in_block(struct flash_ssd_t* ptr_ssd, uint32_t nr_pages, uint3
 	
 	uint32_t i;
 	// 현재 블록의 빈 페이지를 찾음
-	printf("_current_block->no_block %u\n",_current_block->no_block);
 	if(_current_block->is_reserved_block == 0){
 		for(_page_offset = 0; _page_offset < ptr_ssd->nr_pages_per_block; _page_offset++){
 			
@@ -263,7 +262,6 @@ int32_t find_page(struct flash_ssd_t* ptr_ssd, uint32_t nr_pages){
 		_page_offset=0;
 		return 0;
 	}
-	printf("_current_block->no_block %u\n",_current_block->no_block);
 	
 	uint32_t org_bus = _current_block->no_bus;
 	uint32_t org_chip = _current_block->no_chip;
@@ -297,7 +295,6 @@ int32_t page_mapping_get_free_physical_page_address (
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 
 	if(find_page(ptr_ssd, nr_pages)==-1) { goto need_gc; }
-	printf("_current_block->no_block %u\n",_current_block->no_block);
 	*ptr_bus = _current_block->no_bus;
 	*ptr_chip = _current_block->no_chip;
 	*ptr_block = _current_block->no_block;
@@ -333,7 +330,7 @@ void clear_prev_ppa(
 	new_ppa = ftl_convert_to_physical_page_address (bus, chip, block, page);
 	ftl_convert_to_ssd_layout(old_ppa, &rbus, &rchip, &rblock, &rpage);
 
-	
+	printf("lpa is %u, old_ppa is %d, new_ppa is %d\n", logical_page_address, old_ppa, new_ppa);
 	/* 해당 lpa가 update인지 확인, invalidation이 필요한지 확인 */
 	if ((old_ppa!=-1) &&(new_ppa != old_ppa)) {
 		/* update이면 invalidation 함
@@ -375,28 +372,9 @@ int32_t mapping_logical_to_physical(
 	uint32_t ppa = ftl_convert_to_physical_page_address(bus, chip, block, page);
 	/* ppa에 해당하는 정보 등록. */
 	new_block = &(ptr_ssd->list_buses[bus].list_chips[chip].list_blocks[block]);
-	
-	uint32_t prev_valid=new_block->nr_valid_pages;
-	uint32_t prev_invalid=new_block->nr_invalid_pages;
-
-	if(new_block->list_pages[page].page_status == PAGE_STATUS_FREE){
-		new_block->list_pages[page].page_status = PAGE_STATUS_VALID;
-		new_block->list_pages[page].no_logical_page_addr = logical_page_address;
-		new_block->nr_valid_pages++;
-		new_block->nr_free_pages--;
-
+	new_block->list_pages[page].no_logical_page_addr = logical_page_address;
 		// 매핑 테이블 등록
-		ptr_pg_mapping->ptr_pg_table[logical_page_address] = ppa;
-	} else {
-		return -1;
-	}
-
-	new_block->last_modified_time = timer_get_timestamp_in_us();
-	if(prev_valid==0 && prev_invalid==0){
-		ptr_ssd->list_buses[new_block->no_bus].list_chips[new_block->no_chip].nr_free_blocks--;
-		ptr_ssd->list_buses[new_block->no_bus].list_chips[new_block->no_chip].nr_dirty_blocks++;
-	}
-
+	ptr_pg_mapping->ptr_pg_table[logical_page_address] = ppa;
 	return 0;
 }
 
@@ -427,26 +405,19 @@ int32_t page_mapping_map_logical_to_physical (
 		5. 청크테이블: 압축여부, 페이지len, valid 카운트
 	**/
 	if(is_compressed){
-		for(i = 0; i < 1; i++){
-			clear_prev_ppa(ptr_ftl_context, *logical_page_address, bus, chip, block, page+i);
-			if(mapping_logical_to_physical(ptr_ftl_context, *logical_page_address, bus, chip, block, page+i) == -1){
+		for(i = 0; i < 4; i++){
+			clear_prev_ppa(ptr_ftl_context, *(logical_page_address + i), bus, chip, block, page);
+			if(mapping_logical_to_physical(ptr_ftl_context, *(logical_page_address + i)  , bus, chip, block, page) == -1){
 				goto err;
 			}
 		}
 		// 청크 테이블 등록
 		for(i=0; i< 1; i++){
-		printf("-S31----%s||%d \n", __func__, _current_block->no_block);
 			ptr_chunk_table[block * 64 + page].valid_count = WRITE_BUFFER_LEN;
-		printf("-S32----%s||%d \n", __func__, _current_block->no_block);
-		if(_current_block->no_block == 4)
-			printf("stop\n");
 			ptr_chunk_table[block * 64 + page].physical_page_len = nr_pages;
-		printf("-S33----%s||%d \n", __func__, _current_block->no_block);
 			ptr_chunk_table[block * 64 + page].is_compressed = 1;
-			printf("compressed page: %d, valid_count: %d, physical_page_len:%d, is_compressed %d\n", ppa+i,ptr_chunk_table[block * 64 + page].valid_count, ptr_chunk_table[block * 64 + page].physical_page_len, ptr_chunk_table[block * 64 + i].is_compressed);
-		printf("-S3----%s||%d \n", __func__, _current_block->no_block);
+			printf("compressed page: %d, valid_count: %d, physical_page_len:%d, is_compressed %d\n", block * 64 + page, ptr_chunk_table[block * 64 + page].valid_count, ptr_chunk_table[block * 64 + page].physical_page_len, ptr_chunk_table[block * 64 + i].is_compressed);
 		}
-		printf("-S3----%s||%d \n", __func__, _current_block->no_block);
 	} else {
 		clear_prev_ppa(ptr_ftl_context, *logical_page_address, bus, chip, block, page);
 		if(mapping_logical_to_physical(ptr_ftl_context, *logical_page_address, bus, chip, block, page) == -1){
@@ -458,7 +429,7 @@ int32_t page_mapping_map_logical_to_physical (
 		printf("no compressed page: %d, valid_count: %d, physical_page_len:%d, is_compressed %d\n", ppa,ptr_chunk_table[block * 64 + page].valid_count, ptr_chunk_table[block * 64 + page].physical_page_len, ptr_chunk_table[block * 64 + page].is_compressed);
 	}
 
-	printf("-E----%s||%d \n", __func__, _current_block->no_block);
+	printf("-E----%s||%d \n", __func__,0);
 	return 0;
 
 err:
