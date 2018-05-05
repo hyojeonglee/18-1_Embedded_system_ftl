@@ -24,7 +24,7 @@ uint32_t blueftl_page_write(
 
 
 struct wr_buff_t {
-    uint32_t arr_lpa[WRITE_BUFFER_LEN];
+    int32_t arr_lpa[WRITE_BUFFER_LEN];
     uint8_t buff[FLASH_PAGE_SIZE * WRITE_BUFFER_LEN];
 };
 

@@ -106,9 +106,11 @@ void blueftl_page_read(
 	{
 		/*add by charlie*/
 		/*page is in the write buff, not commit yet*/
+
 		printf("get mapped page for lpa %u at bus %u, chip %u block %u page %u\n", lpa_curr, bus, chip, block, page);
+		printf("_ptr_vdevice->page_main_size %u\n", _ptr_vdevice->page_main_size);
 		if((cnt = is_page_in_wb(&_struct_write_buff, lpa_curr)) != -1) {
-			memcpy(ptr_lba_buff, _struct_write_buff.buff + cnt * _ptr_vdevice->page_main_size, _ptr_vdevice->page_main_size);	
+			memcpy(ptr_lba_buff, &_struct_write_buff.buff[cnt], _ptr_vdevice->page_main_size);	
 			printf("get page %u in wb\n", lpa_curr);
 		}else {
 			/*decompress the page and read page from SSD*/
@@ -128,10 +130,19 @@ void blueftl_page_read(
 			if(is_comp) { //data compressed
 				decompressed_buff = (uint8_t *)malloc(sizeof(struct wr_buff_t));
 				memset(decompressed_buff, 0xFF, sizeof(struct wr_buff_t));
-				decompress(decompressing_buff, _ptr_vdevice->page_main_size * nr_pages , decompressed_buff);
-				write_buff = (struct wr_buff_t *)decompressed_buff;
-				if((cnt = is_page_in_wb(write_buff, lpa_curr)) != -1) {
-					memcpy(ptr_lba_buff, write_buff->buff + cnt * _ptr_vdevice->page_main_size, _ptr_vdevice->page_main_size);	
+			//	decompress(decompressing_buff, _ptr_vdevice->page_main_size * nr_pages , decompressed_buff);
+				
+				decompress(decompressing_buff, _ptr_vdevice->page_main_size * nr_pages , _write_buff);
+				
+				deserialize();
+				write_buff = (struct wr_buff_t *)_write_buff;
+				int i;
+				for(i = 0; i < 4; i++) {
+					printf("for lpa_curr: %u, and %u in wb is %d\n", lpa_curr, i, write_buff->arr_lpa[i]);
+				}
+				if((cnt = is_page_in_wb(write_buff, lpa_curr)) != -1) {;
+					memcpy(ptr_lba_buff, &write_buff->buff[cnt], _ptr_vdevice->page_main_size);	
+					printf("found lpa %u at %d\n", lpa_curr, cnt);
 				}else {
 					printf("wanted page are not found\n");
 					return -1;
@@ -171,7 +182,7 @@ uint32_t blueftl_page_write(
 	printf("looking for %u\n", lpa_curr);
 	for(i = 0; i < _nr_buff_pages; i++) {
 		if(_struct_write_buff.arr_lpa[i] == lpa_curr) { //doing in-place update
-			memcpy(_struct_write_buff.buff + i * _ptr_vdevice->page_main_size, ptr_lba_buff, _ptr_vdevice->page_main_size);	
+			memcpy(&_struct_write_buff.buff[i], ptr_lba_buff, _ptr_vdevice->page_main_size);	
 			printf("found in-place update in wb, at %d, with lpa:%u\n", i, lpa_curr);
 			return 0;
 		}
@@ -223,19 +234,19 @@ buffer에서 꺼내 압축 하여 physical write를 하기 전에 read요청이 
 				if(get_free_pages(ftl_base, ptr_ftl_context, 1, &bus, &chip, &block, &page)==-1){
 					goto err;
 				}
-				printf(" with i = %d, get free page at bus:%i, chip:%u,block:%u,page:%u\n", bus, chip,block, page);
+				printf(" with i = %d, get free page at bus:%i, chip:%u,block:%u,page:%u\n",i, bus, chip,block, page);
 				/* 3. physical write */
 				blueftl_user_vdevice_page_write(
 						_ptr_vdevice,
 						bus, chip, block, page,
 						FLASH_PAGE_SIZE,
-						(char *)_struct_write_buff.buff[FLASH_PAGE_SIZE*i]
+						(char *)&_struct_write_buff.buff[FLASH_PAGE_SIZE*i]
 						);
 
 				/* page statut update*/
 				struct flash_block_t *ptr_target_block;
 				ptr_target_block = &(ptr_ssd->list_buses[bus].list_chips[chip].list_blocks[block]);
-				if(ptr_target_block->list_pages[page].page_status = PAGE_STATUS_FREE) {
+				if(ptr_target_block->list_pages[page].page_status == PAGE_STATUS_FREE) {
 					ptr_target_block->list_pages[page].page_status = PAGE_STATUS_VALID;
 					ptr_target_block-> nr_valid_pages++;
 					ptr_target_block->nr_free_pages--;
@@ -252,7 +263,7 @@ buffer에서 꺼내 압축 하여 physical write를 하기 전에 read요청이 
 			printf("finish non-compredded write ");
 		} else { // 압축된 것을 write
 			// 압축된 페이지 계산
-			uint32_t nr_compress_pages = compressed_size / FLASH_PAGE_SIZE + compressed_size % FLASH_PAGE_SIZE?1:0;
+			uint32_t nr_compress_pages = compressed_size / FLASH_PAGE_SIZE + compressed_size % FLASH_PAGE_SIZE? 1: 0;
 			uint32_t bus, chip, block, page;
 			/* 2. 압축된 페이지 사이즈에 맞게 ftl 페이지 요청 */
 			/*     if(get_free_pages(ftl_base, ptr_ftl_context, nr_compress_pages, &bus, &chip, &block, &page)==-1){
@@ -261,7 +272,7 @@ buffer에서 꺼내 압축 하여 physical write를 하기 전에 read요청이 
 				   printf("get nr %d pages succeed \n", nr_compress_pages);*/
 
 			/* 3. physical write */
-			uint32_t *ptr_compress_page;
+			uint8_t *ptr_compress_page;
 			for(i = 0; i < nr_compress_pages; i++){
 				if(get_free_pages(ftl_base, ptr_ftl_context, 1, &bus, &chip, &block, &page) == -1) {
 					goto err;
@@ -281,7 +292,7 @@ buffer에서 꺼내 압축 하여 physical write를 하기 전에 read요청이 
 				uint32_t prev_valid = ptr_target_block->nr_valid_pages;
 				uint32_t prev_invalid = ptr_target_block->nr_invalid_pages;
 
-				if(ptr_target_block->list_pages[page].page_status = PAGE_STATUS_FREE) {
+				if(ptr_target_block->list_pages[page].page_status == PAGE_STATUS_FREE) {
 					ptr_target_block->list_pages[page].page_status = PAGE_STATUS_VALID;
 					ptr_target_block-> nr_valid_pages++;
 					ptr_target_block->nr_free_pages--;
