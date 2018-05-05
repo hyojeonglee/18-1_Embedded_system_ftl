@@ -126,6 +126,8 @@ void blueftl_page_read(
 						(char*)decompressing_buff + loop_page * _ptr_vdevice->page_main_size);
 			}
 			if(is_comp) { //data compressed
+				decompressed_buff = (uint8_t *)malloc(sizeof(struct wr_buff_t));
+				memset(decompressed_buff, 0xFF, sizeof(struct wr_buff_t));
 				decompress(decompressing_buff, _ptr_vdevice->page_main_size * nr_pages , decompressed_buff);
 				write_buff = (struct wr_buff_t *)decompressed_buff;
 				if((cnt = is_page_in_wb(write_buff, lpa_curr)) != -1) {
