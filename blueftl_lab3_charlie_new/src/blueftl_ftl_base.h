@@ -35,6 +35,9 @@ struct ftl_context_t {
 	/* virtual device */
 	struct virtual_device_t* ptr_vdevice;
 
+	/* for write buffer */
+	struct write_buffer_t* write_buf;
+
 	int32_t latest_bus;
 	int32_t latest_chip;
 	int32_t latest_block;

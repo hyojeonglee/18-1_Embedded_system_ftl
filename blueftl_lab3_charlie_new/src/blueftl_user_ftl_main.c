@@ -49,7 +49,6 @@ int32_t blueftl_user_ftl_create (struct ssd_params_t* ptr_ssd_params)
         blueftl_user_vdevice_close (_ptr_vdevice);
         return -1;
     }
-
     return 0;
 }
 

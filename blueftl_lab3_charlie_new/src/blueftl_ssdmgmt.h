@@ -71,19 +71,11 @@ struct flash_bus_t {
 	struct flash_chip_t* list_chips;
 };
 
-struct write_buffer_t {
-	int wb_page_cnt;
-	uint8_t* ptr_wb_buff;
-	uint32_t t_bus[CHUNK_TABLE_SIZE];
-	uint32_t t_chip[CHUNK_TABLE_SIZE];
-	uint32_t t_block[CHUNK_TABLE_SIZE];
-	uint32_t t_pagep[CHUNK_TABLE_SIZE];
-	uint32_t t_lpa[CHUNK_TABLE_SIZE];
-};
+
 
 struct flash_ssd_t {
 	/* for write buffer */
-	struct write_buffer_t* write_buf;
+//	struct write_buffer_t* write_buf;
 	
 	/* ssd information */
 	uint32_t nr_buses;

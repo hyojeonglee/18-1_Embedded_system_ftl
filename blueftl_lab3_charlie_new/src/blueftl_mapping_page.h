@@ -9,7 +9,17 @@ extern struct ftl_base_t ftl_base_page_mapping;
 struct ftl_page_mapping_context_t {
 	uint32_t nr_pg_table_entries;	/* the number of pages that belong to the page mapping table */
 	/* TODO needs nr_blk_table_entries? */
-	int32_t* ptr_pg_table; /* for the page mapping */
+	uint32_t* ptr_pg_table; /* for the page mapping */
+};
+
+struct write_buffer_t {
+	int wb_page_cnt;
+	uint8_t* ptr_wb_buff;
+	uint32_t t_bus[CHUNK_TABLE_SIZE];
+	uint32_t t_chip[CHUNK_TABLE_SIZE];
+	uint32_t t_block[CHUNK_TABLE_SIZE];
+	uint32_t t_pagep[CHUNK_TABLE_SIZE];
+	uint32_t t_lpa[CHUNK_TABLE_SIZE];
 };
 
 /* create the page mapping table */

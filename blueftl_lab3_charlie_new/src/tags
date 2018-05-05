@@ -278,14 +278,14 @@ ptr_page_data	blueftl_char.h	/^	uint8_t ptr_page_data[2048];$/;"	m	struct:blueft
 ptr_pg_table	blueftl_mapping_page.h	/^	uint32_t* ptr_pg_table; \/* for the page mapping *\/$/;"	m	struct:ftl_page_mapping_context_t
 ptr_ssd	blueftl_ftl_base.h	/^	struct flash_ssd_t* ptr_ssd;$/;"	m	struct:ftl_context_t	typeref:struct:ftl_context_t::flash_ssd_t
 ptr_vdevice	blueftl_ftl_base.h	/^	struct virtual_device_t* ptr_vdevice;$/;"	m	struct:ftl_context_t	typeref:struct:ftl_context_t::virtual_device_t
-ptr_wb_buff	blueftl_ssdmgmt.h	/^	uint8_t* ptr_wb_buff;$/;"	m	struct:write_buffer_t
+ptr_wb_buff	blueftl_mapping_page.h	/^	uint8_t* ptr_wb_buff;$/;"	m	struct:write_buffer_t
 ssd_params_t	blueftl_user.h	/^struct ssd_params_t {$/;"	s
 ssd_type	blueftl_user.h	/^	uint32_t ssd_type;$/;"	m	struct:ssd_params_t
-t_block	blueftl_ssdmgmt.h	/^	uint32_t t_block[CHUNK_TABLE_SIZE];$/;"	m	struct:write_buffer_t
-t_bus	blueftl_ssdmgmt.h	/^	uint32_t t_bus[CHUNK_TABLE_SIZE];$/;"	m	struct:write_buffer_t
-t_chip	blueftl_ssdmgmt.h	/^	uint32_t t_chip[CHUNK_TABLE_SIZE];$/;"	m	struct:write_buffer_t
-t_lpa	blueftl_ssdmgmt.h	/^	uint32_t t_lpa[CHUNK_TABLE_SIZE];$/;"	m	struct:write_buffer_t
-t_pagep	blueftl_ssdmgmt.h	/^	uint32_t t_pagep[CHUNK_TABLE_SIZE];$/;"	m	struct:write_buffer_t
+t_block	blueftl_mapping_page.h	/^	uint32_t t_block[CHUNK_TABLE_SIZE];$/;"	m	struct:write_buffer_t
+t_bus	blueftl_mapping_page.h	/^	uint32_t t_bus[CHUNK_TABLE_SIZE];$/;"	m	struct:write_buffer_t
+t_chip	blueftl_mapping_page.h	/^	uint32_t t_chip[CHUNK_TABLE_SIZE];$/;"	m	struct:write_buffer_t
+t_lpa	blueftl_mapping_page.h	/^	uint32_t t_lpa[CHUNK_TABLE_SIZE];$/;"	m	struct:write_buffer_t
+t_pagep	blueftl_mapping_page.h	/^	uint32_t t_pagep[CHUNK_TABLE_SIZE];$/;"	m	struct:write_buffer_t
 timer_get_timestamp_in_sec	blueftl_util.c	/^uint32_t timer_get_timestamp_in_sec (void)$/;"	f
 timer_get_timestamp_in_us	blueftl_util.c	/^uint32_t timer_get_timestamp_in_us (void)$/;"	f
 timer_init	blueftl_util.c	/^void timer_init (void)$/;"	f
@@ -295,7 +295,7 @@ update_max_min_nr_erase_cnt_in_pool	blueftl_wl_dual_pool.c	/^uint32_t update_max
 update_max_min_nr_erase_cnt_in_pool	blueftl_wl_dual_pool.h	/^	uint32_t (* update_max_min_nr_erase_cnt_in_pool) ( int pool, int type, int min_max, int bus, int chip, int block, uint32_t erasure_count);$/;"	m	struct:ftl_wl_t
 valid_page_cnt	blueftl_ftl_base.h	/^	uint32_t valid_page_cnt;$/;"	m	struct:chunk_table_t
 virtual_device_t	blueftl_user_vdevice.h	/^struct virtual_device_t {$/;"	s
-wb_page_cnt	blueftl_ssdmgmt.h	/^	int wb_page_cnt;$/;"	m	struct:write_buffer_t
+wb_page_cnt	blueftl_mapping_page.h	/^	int wb_page_cnt;$/;"	m	struct:write_buffer_t
 wl_policy	blueftl_user.h	/^	uint32_t wl_policy;$/;"	m	struct:ssd_params_t
 write_buf	blueftl_ssdmgmt.h	/^	struct write_buffer_t* write_buf;$/;"	m	struct:flash_ssd_t	typeref:struct:flash_ssd_t::write_buffer_t
-write_buffer_t	blueftl_ssdmgmt.h	/^struct write_buffer_t {$/;"	s
+write_buffer_t	blueftl_mapping_page.h	/^struct write_buffer_t {$/;"	s

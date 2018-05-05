@@ -1,7 +1,5 @@
 #ifdef KERNEL_MODE
-
-#include <linux/module.h>
-
+#include <linux/module.h> 
 #include "blueftl_ftl_base.h"
 #include "blueftl_ssdmgmt.h"
 #include "bluessd_vdevice.h"
@@ -58,6 +56,8 @@ struct ftl_context_t* page_mapping_create_ftl_context (
 		printf ("blueftl_mapping_page: the creation of the ftl context failed\n");
 		goto error_create_ssd_context;
 	}
+	ptr_ssd = ptr_ftl_context->ptr_ssd;
+	printf("%d, %d, %d, %d\n", ptr_ftl_context->ptr_ssd->nr_buses, ptr_ftl_context->ptr_ssd->nr_chips_per_bus, ptr_ftl_context->ptr_ssd->nr_blocks_per_chip, ptr_ftl_context->ptr_ssd->nr_pages_per_block);
 
 	/* create the page mapping context */
 	/*if ((ptr_ftl_context->ptr_mapping = (struct ftl_block_mapping_context_t *)kmalloc (sizeof (struct ftl_block_mapping_context_t), GFP_ATOMIC)) == NULL) {*/
@@ -78,12 +78,14 @@ struct ftl_context_t* page_mapping_create_ftl_context (
 
 	ptr_ssd = ptr_ftl_context->ptr_ssd;
 	ptr_pg_mapping = (struct ftl_page_mapping_context_t *)ptr_ftl_context->ptr_mapping;
+	printf("%u, %u, %u, %u\n", ptr_ssd->nr_buses, ptr_ssd->nr_chips_per_bus, ptr_ssd->nr_blocks_per_chip, ptr_ssd->nr_pages_per_block);
 
 	/* TODO: implement block-level > page-level FTL */
 
 	/* TODO is this right? */
 	ptr_pg_mapping->nr_pg_table_entries = 
 		ptr_ssd->nr_buses * ptr_ssd->nr_chips_per_bus * ptr_ssd->nr_blocks_per_chip * ptr_ssd->nr_pages_per_block; // TODO modify ? */
+	printf("ptr_pg_mapping->nr_entries %d\n", ptr_pg_mapping->nr_pg_table_entries);
 
 	/*if ((ptr_blk_mapping->ptr_blk_table = (uint32_t*)kmalloc (ptr_blk_mapping->nr_blk_table_entries * sizeof (uint32_t), GFP_ATOMIC)) == NULL) {*/
 	if ((ptr_pg_mapping->ptr_pg_table = (uint32_t*)malloc (ptr_pg_mapping->nr_pg_table_entries * sizeof (uint32_t))) == NULL) {
@@ -98,17 +100,17 @@ struct ftl_context_t* page_mapping_create_ftl_context (
 
 	/* TODO: end */
 
-	if ((ptr_ssd->write_buf = (struct write_buffer_t*)malloc(sizeof(struct write_buffer_t))) == NULL) {
+	if ((ptr_ftl_context->write_buf = (struct write_buffer_t*)malloc(sizeof(struct write_buffer_t))) == NULL) {
 		printf("blueftl_mapping_page: failed to allocate the memory for write buffer\n");
 		return -1;
 	}
 
-	if ((ptr_ssd->write_buf->ptr_wb_buff = (uint8_t *)malloc(_ptr_vdevice->page_main_size * CHUNK_TABLE_SIZE)) == NULL) {
+	if ((ptr_ftl_context->write_buf->ptr_wb_buff = (uint8_t *)malloc(_ptr_vdevice->page_main_size * CHUNK_TABLE_SIZE)) == NULL) {
 		printf("blueftl_mapping_page: failed to allocate the memory for write buffer\n");
 		return -1;
 	}
 
-	memset(ptr_ssd->write_buf->ptr_wb_buff, 0xFF, CHUNK_TABLE_SIZE * ptr_vdevice->page_main_size);
+	memset(ptr_ftl_context->write_buf->ptr_wb_buff, 0xFF, CHUNK_TABLE_SIZE * ptr_vdevice->page_main_size);
 
 	return ptr_ftl_context;
 
@@ -134,8 +136,8 @@ void page_mapping_destroy_ftl_context (struct ftl_context_t* ptr_ftl_context)
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 	struct ftl_page_mapping_context_t* ptr_pg_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
 
-	free(ptr_ssd->write_buf->ptr_wb_buff);
-	free(ptr_ssd->write_buf);
+	free(ptr_ftl_context->write_buf->ptr_wb_buff);
+	free(ptr_ftl_context->write_buf);
 
 	/* TODO: implement block-level > page-level FTL */
 	if (ptr_pg_mapping->ptr_pg_table != NULL) {
@@ -197,7 +199,7 @@ int32_t page_mapping_get_mapped_physical_page_address (
 			ret = 0;
 		}
 	}
-
+	printf("E-----%s, ret %d\n",__func__,ret);
 	return ret;
 }
 
