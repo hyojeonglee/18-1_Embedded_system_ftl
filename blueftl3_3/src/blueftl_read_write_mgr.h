@@ -28,7 +28,7 @@ struct wr_buff_t {
     uint8_t buff[FLASH_PAGE_SIZE * WRITE_BUFFER_LEN];
 };
 
-struct wr_buff_t _struct_write_buff; 
+//struct wr_buff_t _struct_write_buff; 
 
 uint8_t *_write_buff;
 uint8_t *_compressed_buff;

@@ -15,8 +15,8 @@
 #include "blueftl_char.h"
 #include "blueftl_wl_dual_pool.h"
 #include "blueftl_gc_page.h"
-#include "blueftl_read_write_mgr.h"
-#include "lzrw3.h"
+#include "blueftl_read_write_mgr.h" 
+#include "lzrw3.h" 
 struct ftl_base_t _ftl_base;
 struct ftl_context_t* _ptr_ftl_context = NULL;
 
@@ -123,7 +123,6 @@ int32_t blueftl_user_ftl_main (
 		case NETLINK_READ:
 			for (lpa_curr = lpa_begin; lpa_curr < lpa_end; lpa_curr++) {
 				/* find a physical page address corresponding to a given lpa */
-//				printf("case read: lpa: %u\n", lpa_curr);
 				uint8_t* ptr_lba_buff = ptr_buffer + ((lpa_curr - lpa_begin) * _ptr_vdevice->page_main_size);
 				
 				blueftl_page_read(&_ftl_base, _ptr_ftl_context, lpa_curr, ptr_lba_buff);
@@ -132,7 +131,6 @@ int32_t blueftl_user_ftl_main (
 
 		case NETLINK_WRITE:
 			for (lpa_curr = lpa_begin; lpa_curr < lpa_end; lpa_curr++) {
-//				printf("case write: lpa: %u\n", lpa_curr);
 				uint8_t* ptr_lba_buff = ptr_buffer + ((lpa_curr - lpa_begin) * _ptr_vdevice->page_main_size);
 				
 				if((ret=blueftl_page_write(&_ftl_base, _ptr_ftl_context, lpa_curr, ptr_lba_buff)) == -1){
@@ -152,6 +150,5 @@ int32_t blueftl_user_ftl_main (
 
 failed:
 //	blueftl_user_vdevice_req_done (_ptr_vdevice);
-//	printf(" %s ret %d\n", __func__, ret);
 	return ret;
 }

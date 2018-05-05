@@ -21,11 +21,13 @@
 #if 0
 struct wr_buff_t {
 	uint32_t arr_lpa[WRITE_BUFFER_LEN];
-	uint8_t buff[FLASH_PAGE_SIZE * WRITE_BUFFER_LEN];
+	uint8_t buff[FLASH_PAGE_SIZE * WRITE_BUFFER_LEN] = {0,};
 };
 
-struct wr_buff_t _struct_write_buff; 
 #endif
+struct wr_buff_t _struct_write_buff; 
+struct wr_buff_t _struct_write_buff_r;
+
 
 uint8_t *_write_buff;
 uint8_t *_compressed_buff;
@@ -109,8 +111,9 @@ void blueftl_page_read(
 
 		printf("get mapped page for lpa %u at bus %u, chip %u block %u page %u\n", lpa_curr, bus, chip, block, page);
 		printf("_ptr_vdevice->page_main_size %u\n", _ptr_vdevice->page_main_size);
+
 		if((cnt = is_page_in_wb(&_struct_write_buff, lpa_curr)) != -1) {
-			memcpy(ptr_lba_buff, &_struct_write_buff.buff[cnt], _ptr_vdevice->page_main_size);	
+			memcpy(ptr_lba_buff, &(_struct_write_buff.buff[cnt]), _ptr_vdevice->page_main_size);	
 			printf("get page %u in wb\n", lpa_curr);
 		}else {
 			/*decompress the page and read page from SSD*/
@@ -127,25 +130,20 @@ void blueftl_page_read(
 						_ptr_vdevice->page_main_size,
 						(char*)decompressing_buff + loop_page * _ptr_vdevice->page_main_size);
 			}
-			if(is_comp) { //data compressed
+			if(is_comp) { 
+				//data compressed
 				decompressed_buff = (uint8_t *)malloc(sizeof(struct wr_buff_t));
 				memset(decompressed_buff, 0xFF, sizeof(struct wr_buff_t));
+				memset(_write_buff, 0xFF, sizeof(struct wr_buff_t));
 			//	decompress(decompressing_buff, _ptr_vdevice->page_main_size * nr_pages , decompressed_buff);
-				
-				decompress(decompressing_buff, _ptr_vdevice->page_main_size * nr_pages , _write_buff);
-				
+				UWORD size = decompress(decompressing_buff, _ptr_vdevice->page_main_size * nr_pages , _write_buff);
+				printf("sizeof struct wr_buff_t is %d\n", size);
 				deserialize();
-				write_buff = (struct wr_buff_t *)_write_buff;
-				int i;
-				for(i = 0; i < 4; i++) {
-					printf("for lpa_curr: %u, and %u in wb is %d\n", lpa_curr, i, write_buff->arr_lpa[i]);
-				}
-				if((cnt = is_page_in_wb(write_buff, lpa_curr)) != -1) {;
-					memcpy(ptr_lba_buff, &write_buff->buff[cnt], _ptr_vdevice->page_main_size);	
+				if((cnt = is_page_in_wb(&_struct_write_buff_r, lpa_curr)) != -1) {;
+					memcpy(ptr_lba_buff, &(_struct_write_buff_r.buff[cnt]), _ptr_vdevice->page_main_size);	
 					printf("found lpa %u at %d\n", lpa_curr, cnt);
 				}else {
 					printf("wanted page are not found\n");
-					return -1;
 				}
 
 			}else { // not compressed
@@ -182,7 +180,7 @@ uint32_t blueftl_page_write(
 	printf("looking for %u\n", lpa_curr);
 	for(i = 0; i < _nr_buff_pages; i++) {
 		if(_struct_write_buff.arr_lpa[i] == lpa_curr) { //doing in-place update
-			memcpy(&_struct_write_buff.buff[i], ptr_lba_buff, _ptr_vdevice->page_main_size);	
+			memcpy(&(_struct_write_buff.buff[i]), ptr_lba_buff, _ptr_vdevice->page_main_size);	
 			printf("found in-place update in wb, at %d, with lpa:%u\n", i, lpa_curr);
 			return 0;
 		}
@@ -190,7 +188,7 @@ uint32_t blueftl_page_write(
 	}
 	_nr_buff_pages++; // there is no in-place update
 	_struct_write_buff.arr_lpa[_nr_buff_pages-1] = lpa_curr; // (3)
-	memcpy(&_struct_write_buff.buff[_nr_buff_pages-1], ptr_lba_buff, FLASH_PAGE_SIZE); // (5)
+	memcpy(&(_struct_write_buff.buff[_nr_buff_pages-1]), ptr_lba_buff, FLASH_PAGE_SIZE); // (5)
 
 	/* buff가 꽉찼으므로 compression 후 write */
 	if(_nr_buff_pages == WRITE_BUFFER_LEN){
@@ -390,21 +388,21 @@ void serialize(){
 void deserialize(){
 	uint8_t *ptr_buf_pos = _write_buff;
 
-	memcpy(&_struct_write_buff.arr_lpa[0], ptr_buf_pos, sizeof(uint32_t));
+	memcpy(&_struct_write_buff_r.arr_lpa[0], ptr_buf_pos, sizeof(uint32_t));
 	ptr_buf_pos += sizeof(uint32_t);
-	memcpy(&_struct_write_buff.arr_lpa[1], ptr_buf_pos, sizeof(uint32_t));
+	memcpy(&_struct_write_buff_r.arr_lpa[1], ptr_buf_pos, sizeof(uint32_t));
 	ptr_buf_pos += sizeof(uint32_t);
-	memcpy(&_struct_write_buff.arr_lpa[2], ptr_buf_pos, sizeof(uint32_t));
+	memcpy(&_struct_write_buff_r.arr_lpa[2], ptr_buf_pos, sizeof(uint32_t));
 	ptr_buf_pos += sizeof(uint32_t);
-	memcpy(&_struct_write_buff.arr_lpa[3], ptr_buf_pos, sizeof(uint32_t));
+	memcpy(&_struct_write_buff_r.arr_lpa[3], ptr_buf_pos, sizeof(uint32_t));
 	ptr_buf_pos += sizeof(uint32_t);
 
-	memcpy(&_struct_write_buff.buff[FLASH_PAGE_SIZE*0], ptr_buf_pos, FLASH_PAGE_SIZE);
+	memcpy(&_struct_write_buff_r.buff[FLASH_PAGE_SIZE*0], ptr_buf_pos, FLASH_PAGE_SIZE);
 	ptr_buf_pos += FLASH_PAGE_SIZE;
-	memcpy(&_struct_write_buff.buff[FLASH_PAGE_SIZE*1], ptr_buf_pos, FLASH_PAGE_SIZE);
+	memcpy(&_struct_write_buff_r.buff[FLASH_PAGE_SIZE*1], ptr_buf_pos, FLASH_PAGE_SIZE);
 	ptr_buf_pos += FLASH_PAGE_SIZE;
-	memcpy(&_struct_write_buff.buff[FLASH_PAGE_SIZE*2], ptr_buf_pos, FLASH_PAGE_SIZE);
+	memcpy(&_struct_write_buff_r.buff[FLASH_PAGE_SIZE*2], ptr_buf_pos, FLASH_PAGE_SIZE);
 	ptr_buf_pos += FLASH_PAGE_SIZE;
-	memcpy(&_struct_write_buff.buff[FLASH_PAGE_SIZE*3], ptr_buf_pos, FLASH_PAGE_SIZE);
+	memcpy(&_struct_write_buff_r.buff[FLASH_PAGE_SIZE*3], ptr_buf_pos, FLASH_PAGE_SIZE);
 
 }
