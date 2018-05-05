@@ -56,7 +56,7 @@ struct ftl_context_t* page_mapping_create_ftl_context(struct virtual_device_t* p
 
 	timer_init();
 	srand(time(NULL));
-	printf("-S----%s \n", __func__);
+//	printf("-S----%s \n", __func__);
 
 	/* create the ftl context */
 	/*if ((ptr_ftl_context = (struct ftl_context_t*)kmalloc (sizeof (struct ftl_context_t), GFP_ATOMIC)) == NULL) {*/
@@ -87,7 +87,7 @@ struct ftl_context_t* page_mapping_create_ftl_context(struct virtual_device_t* p
 	/* TODO: implement page-level FTL */
 
 	ptr_pg_mapping->nr_pg_table_entries = ptr_ssd->nr_buses * ptr_ssd->nr_chips_per_bus * ptr_ssd->nr_blocks_per_chip * ptr_ssd->nr_pages_per_block;
-	printf(" %d %d %d %d = %d \n", ptr_ssd->nr_buses, ptr_ssd->nr_chips_per_bus, ptr_ssd->nr_blocks_per_chip, ptr_ssd->nr_pages_per_block, ptr_pg_mapping->nr_pg_table_entries);
+//	printf(" %d %d %d %d = %d \n", ptr_ssd->nr_buses, ptr_ssd->nr_chips_per_bus, ptr_ssd->nr_blocks_per_chip, ptr_ssd->nr_pages_per_block, ptr_pg_mapping->nr_pg_table_entries);
 
 	if ((ptr_pg_mapping->ptr_pg_table = (uint32_t*)malloc (ptr_pg_mapping->nr_pg_table_entries * sizeof (int32_t))) == NULL) {
 		printf ("blueftl_mapping_page: failed to allocate the memory for ptr_mapping_table\n");
@@ -108,7 +108,7 @@ struct ftl_context_t* page_mapping_create_ftl_context(struct virtual_device_t* p
 	}
 	
 	 int b,o;
-	 for(b=0; b<1024; b++){ for(o=0; o<64; o++) printf("%d ", ptr_ssd->list_buses[0].list_chips[0].list_blocks[b].list_pages[o].page_status);}
+//	 for(b=0; b<1024; b++){ for(o=0; o<64; o++) printf("%d ", ptr_ssd->list_buses[0].list_chips[0].list_blocks[b].list_pages[o].page_status);}
 	gc_page_trigger_init(ptr_ftl_context);
 	/* TODO: end */
 	
@@ -237,7 +237,7 @@ int32_t find_page_in_block(struct flash_ssd_t* ptr_ssd, uint32_t nr_pages, uint3
 		}
 	}
 
-#if 0
+#if 1
 	(*pblock)++;
 	if((*pblock) >= ptr_ssd->nr_blocks_per_chip){
 		(*pchip)++;
@@ -248,14 +248,9 @@ int32_t find_page_in_block(struct flash_ssd_t* ptr_ssd, uint32_t nr_pages, uint3
 			if((*pbus) >= ptr_ssd->nr_buses) (*pbus)=0;
 		}
 	}
-#endif
-	_current_block = ssdmgmt_get_free_block(ptr_ssd, 0, 0);
-//	_page_offset = 0;
-	*pbus = _current_block->no_bus;
-	*pchip = _current_block->no_chip;
-	*pblock = _current_block->no_block;
-//	_current_block = &(ptr_ssd->list_buses[*pbus].list_chips[*pchip].list_blocks[*pblock]);
+	_current_block = &(ptr_ssd->list_buses[*pbus].list_chips[*pchip].list_blocks[*pblock]);
 	return -1;
+#endif
 }
 
 int32_t find_page(struct flash_ssd_t* ptr_ssd, uint32_t nr_pages){

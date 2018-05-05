@@ -22,6 +22,7 @@ struct ftl_context_t* _ptr_ftl_context = NULL;
 
 extern int8_t _is_debugging_mode;
 
+#if 0
 struct sigaction act_new;
 struct sigaction act_old;
 
@@ -55,10 +56,8 @@ void printall(int sig){ // can be called asynchronously
 		printf("-----------------------");
 	}
 	printf("max ec: %d\n", max_count);
-	// printf("standard deviation: %lf\n", sqrt(sd(d)));
-	// kill(getpid(), SIGINT);
-	// exit(0);
 }
+#endif
 
 int32_t blueftl_user_ftl_create (struct ssd_params_t* ptr_ssd_params)
 {
@@ -66,13 +65,8 @@ int32_t blueftl_user_ftl_create (struct ssd_params_t* ptr_ssd_params)
 	if ((_ptr_vdevice = blueftl_user_vdevice_open (ptr_ssd_params)) == NULL) {
 		return -1;
 	}
-	
-//	act_new.sa_handler = printall; // 시그널 핸들러 지정
-//	sigemptyset(&act_new.sa_mask);      // 시그널 처리 중 블록될 시그널은 없음
-//	sigaction(SIGTSTP, &act_new, &act_old); 
 
 	/* map the block mapping functions to _ftl_base */
-	// _ftl_base = ftl_base_block_mapping;
 	_ftl_base = ftl_base_page_mapping; //* mskim: page mapping */
 	
 
@@ -88,8 +82,6 @@ int32_t blueftl_user_ftl_create (struct ssd_params_t* ptr_ssd_params)
 		return -1;
 	}
 
-
-	printf("blueftl user create end\n");
 	return 0;
 }
 
@@ -124,14 +116,14 @@ int32_t blueftl_user_ftl_main (
 
 	lpa_begin = lba_begin / _ptr_vdevice->page_main_size;
 	lpa_end = lpa_begin + (lba_end / _ptr_vdevice->page_main_size);
-	printf("case all: lpa_begin: %u, lpa_end %u\n", lpa_begin, lpa_end);
+//	printf("case all: lpa_begin: %u, lpa_end %u\n", lpa_begin, lpa_end);
 	
 	switch (req_dir) {
 		case NETLINK_READA:
 		case NETLINK_READ:
 			for (lpa_curr = lpa_begin; lpa_curr < lpa_end; lpa_curr++) {
 				/* find a physical page address corresponding to a given lpa */
-				printf("case read: lpa: %u\n", lpa_curr);
+//				printf("case read: lpa: %u\n", lpa_curr);
 				uint8_t* ptr_lba_buff = ptr_buffer + ((lpa_curr - lpa_begin) * _ptr_vdevice->page_main_size);
 				
 				blueftl_page_read(&_ftl_base, _ptr_ftl_context, lpa_curr, ptr_lba_buff);
@@ -140,7 +132,7 @@ int32_t blueftl_user_ftl_main (
 
 		case NETLINK_WRITE:
 			for (lpa_curr = lpa_begin; lpa_curr < lpa_end; lpa_curr++) {
-				printf("case write: lpa: %u\n", lpa_curr);
+//				printf("case write: lpa: %u\n", lpa_curr);
 				uint8_t* ptr_lba_buff = ptr_buffer + ((lpa_curr - lpa_begin) * _ptr_vdevice->page_main_size);
 				
 				if((ret=blueftl_page_write(&_ftl_base, _ptr_ftl_context, lpa_curr, ptr_lba_buff)) == -1){
@@ -158,7 +150,7 @@ int32_t blueftl_user_ftl_main (
 	ret = 0;
 
 failed:
-	blueftl_user_vdevice_req_done (_ptr_vdevice);
-	printf(" %s ret %d\n", __func__, ret);
+//	blueftl_user_vdevice_req_done (_ptr_vdevice);
+//	printf(" %s ret %d\n", __func__, ret);
 	return ret;
 }
