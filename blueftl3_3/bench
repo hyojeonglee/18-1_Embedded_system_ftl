@@ -1,0 +1,2 @@
+echo 3 > /proc/sys/vm/drop_caches
+benchmark/run_bonnie++.sh
