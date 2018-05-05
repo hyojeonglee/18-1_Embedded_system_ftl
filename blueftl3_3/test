@@ -1,0 +1,7 @@
+./dropcache
+./fs
+mount -t ext2 /dev/blueSSD /media/blueSSD/
+dmesg | tail
+echo 3 > /proc/sys/vm/drop_caches
+benchmark/run_bonnie++.sh
+

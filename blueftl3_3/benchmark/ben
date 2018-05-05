@@ -1,0 +1,9 @@
+echo 3 > /proc/sys/vm/drop_caches
+./run_postmark.sh > greedy_post 
+
+echo 3 > /proc/sys/vm/drop_caches
+./run_tiobench.sh > greedy_tio
+
+echo 3 > /proc/sys/vm/drop_caches
+./run_bonnie++.sh > greedy_bonnie
+
