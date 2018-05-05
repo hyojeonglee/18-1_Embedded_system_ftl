@@ -8,6 +8,7 @@
 #define PAGE_STATUS_FREE		1
 #define PAGE_STATUS_INVALID		2
 #define PAGE_STATUS_VALID		3
+#define CHUNK_SIZE				4
 #define CHUNK_TABLE_SIZE		4
 
 struct flash_page_t {
@@ -78,7 +79,7 @@ struct write_buffer_t {
 	uint32_t t_block[CHUNK_TABLE_SIZE];
 	uint32_t t_pagep[CHUNK_TABLE_SIZE];
 	uint32_t t_lpa[CHUNK_TABLE_SIZE];
-}
+};
 
 struct flash_ssd_t {
 	/* for write buffer */

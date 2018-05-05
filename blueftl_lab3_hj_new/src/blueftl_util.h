@@ -2,7 +2,6 @@
 #define _BLUESSD_UTIL
 
 #include <fcntl.h>
-#include "blueftl_ftl_base.h"
 
 #if !defined( min )
 # define min(a,b) (a<b?a:b)

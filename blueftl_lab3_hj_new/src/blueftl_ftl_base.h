@@ -24,6 +24,8 @@ struct chunk_table_t {
 };
 
 struct ftl_context_t {
+	struct chunk_table_t chk_table[1024*64];
+	
 	/* all about SSD */
 	struct flash_ssd_t* ptr_ssd;
 

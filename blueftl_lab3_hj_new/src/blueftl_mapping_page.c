@@ -11,6 +11,7 @@
 
 #else
 
+#include <string.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -350,15 +351,15 @@ int32_t page_mapping_map_logical_to_physical_c (
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 	struct flash_block_t* ptr_erase_block;
 	struct ftl_page_mapping_context_t* ptr_pg_mapping = (struct ftl_page_mapping_context_t*)ptr_ftl_context->ptr_mapping;
-	struct chunk_table_t* ptr_chunk_table = ptr_ftl_context->chunk_table;
+	struct chunk_table_t* ptr_chunk_table = ptr_ftl_context->chk_table;
 	uint32_t physical_page_address;
 	int i = 0;
 
 	ptr_erase_block = &ptr_ssd->list_buses[bus].list_chips[chip].list_blocks[block];
 	ptr_erase_block->list_pages[page].page_status = PAGE_STATUS_VALID;
 	
-	if ((ptr_pg_mapping->ptr_page_table[logical_page_address] != PAGE_TABLE_FREE)) {
-		uint32_t physical_page_address_old = ptr_pg_mapping->ptr_page_table[logical_page_address];
+	if ((ptr_pg_mapping->ptr_pg_table[logical_page_address] != PAGE_TABLE_FREE)) {
+		uint32_t physical_page_address_old = ptr_pg_mapping->ptr_pg_table[logical_page_address];
 		uint32_t bus_old, chip_old, block_old, page_old;
 
 		ftl_convert_to_ssd_layout (physical_page_address_old, &bus_old, &chip_old, &block_old, &page_old);
@@ -372,7 +373,7 @@ int32_t page_mapping_map_logical_to_physical_c (
 	else
 		physical_page_address = ftl_convert_to_physical_page_address (t_bus, t_chip, t_block, t_page);
 
-	ptr_pg_mapping->ptr_page_table[logical_page_address] = physical_page_address;
+	ptr_pg_mapping->ptr_pg_table[logical_page_address] = physical_page_address;
 	ptr_erase_block->nr_valid_pages++;
 	ptr_erase_block->nr_free_pages--;
 
