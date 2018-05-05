@@ -44,6 +44,9 @@ struct ftl_base_t ftl_base_page_mapping = {
 	.ftl_trigger_wear_leveler = NULL,
 };
 
+struct flash_block_t *_current_block = (struct flash_block_t *)NULL;
+uint32_t _page_offset;
+
 
 /* create the page mapping table */
 struct ftl_context_t* page_mapping_create_ftl_context(struct virtual_device_t* ptr_vdevice)
@@ -95,7 +98,7 @@ struct ftl_context_t* page_mapping_create_ftl_context(struct virtual_device_t* p
 	}
 
 	/* initialize ptr_chunk_table */
-	if((ptr_pg_mapping->ptr_chunk_table = (struct chunk_table_t *)malloc(ptr_pg_mapping->nr_pg_table_entries * sizeof(struct chunk_table_t *))) == NULL) {
+	if((ptr_pg_mapping->ptr_chunk_table = (struct chunk_table_t *)malloc(ptr_pg_mapping->nr_pg_table_entries * sizeof(struct chunk_table_t))) == NULL) {
 		printf ("blueftl_mapping_page: failed to allocate the memory for ptr_chunk_table\n");
 		goto error_alloc_ptr_chunk_table;
 	}
@@ -104,7 +107,7 @@ struct ftl_context_t* page_mapping_create_ftl_context(struct virtual_device_t* p
 		ptr_pg_mapping->ptr_pg_table[init_pg_loop] = PAGE_TABLE_FREE;
 		ptr_pg_mapping->ptr_chunk_table[init_pg_loop].valid_count = 0;
 		ptr_pg_mapping->ptr_chunk_table[init_pg_loop].physical_page_len = 0;
-		ptr_pg_mapping->ptr_chunk_table[init_pg_loop].is_compressed = false;
+		ptr_pg_mapping->ptr_chunk_table[init_pg_loop].is_compressed = 0;
 	}
 	
 	 int b,o;
@@ -212,15 +215,15 @@ int32_t page_mapping_get_mapped_physical_page_address (
 	return ret;
 }
 
-struct flash_block_t *_current_block = (struct flash_block_t *)-1;
-uint32_t _page_offset;
+
 
 int32_t find_page_in_block(struct flash_ssd_t* ptr_ssd, uint32_t nr_pages, uint32_t *pbus, uint32_t *pchip, uint32_t *pblock){
 	
 	uint32_t i;
 	// 현재 블록의 빈 페이지를 찾음
+	printf("_current_block->no_block %u\n",_current_block->no_block);
 	if(_current_block->is_reserved_block == 0){
-		for(_page_offset=0; _page_offset < ptr_ssd->nr_pages_per_block; _page_offset++){
+		for(_page_offset = 0; _page_offset < ptr_ssd->nr_pages_per_block; _page_offset++){
 			
 			// FREE PAGE를 찾음 
 			if(_current_block->list_pages[_page_offset].page_status == PAGE_STATUS_FREE){
@@ -254,15 +257,18 @@ int32_t find_page_in_block(struct flash_ssd_t* ptr_ssd, uint32_t nr_pages, uint3
 }
 
 int32_t find_page(struct flash_ssd_t* ptr_ssd, uint32_t nr_pages){
-	if(_current_block == (struct flash_block_t *)-1){
+	if(_current_block == (struct flash_block_t *)NULL){
 		_current_block = ssdmgmt_get_free_block(ptr_ssd, 0, 0);
 		printf("get new block, list_pages[0]->page_status %d\n",_current_block->list_pages[0].page_status);
 		_page_offset=0;
 		return 0;
 	}
+	printf("_current_block->no_block %u\n",_current_block->no_block);
+	
 	uint32_t org_bus = _current_block->no_bus;
 	uint32_t org_chip = _current_block->no_chip;
 	uint32_t org_block = _current_block->no_block;
+	printf("org_bus %u, org_chip %u, org_block %u\n", org_bus, org_chip, org_block);
 	uint32_t bus = org_bus;
 	uint32_t chip = org_chip;
 	uint32_t block = org_block;
@@ -270,6 +276,7 @@ int32_t find_page(struct flash_ssd_t* ptr_ssd, uint32_t nr_pages){
 
 	// if(find_page_in_block(ptr_ssd, nr_pages, &bus, &chip, &block)==0) return 0;
 	do{
+
 		if(find_page_in_block(ptr_ssd, nr_pages, &bus, &chip, &block)==0) return 0;
 	}while(!(org_bus==bus && org_chip==chip && org_block==block));
 	 printf("*\n");
@@ -290,12 +297,13 @@ int32_t page_mapping_get_free_physical_page_address (
 	struct flash_ssd_t* ptr_ssd = ptr_ftl_context->ptr_ssd;
 
 	if(find_page(ptr_ssd, nr_pages)==-1) { goto need_gc; }
+	printf("_current_block->no_block %u\n",_current_block->no_block);
 	*ptr_bus = _current_block->no_bus;
 	*ptr_chip = _current_block->no_chip;
 	*ptr_block = _current_block->no_block;
 	*ptr_page = _page_offset;
 	
-	printf("-E----%s \n\n", __func__);
+	printf("-E----%s bus:%u, chip:%u, block:%u, page:%u \n\n", __func__, *ptr_bus, *ptr_chip, *ptr_block, *ptr_page);
 
 	return 0;
 
@@ -403,7 +411,8 @@ int32_t page_mapping_map_logical_to_physical (
 	uint32_t nr_pages,
 	bool is_compressed)
 {
-	struct chunk_table_t *ptr_chunk_table = ((struct ftl_page_mapping_context_t*)ptr_ftl_context)->ptr_chunk_table;
+	struct ftl_page_mapping_context_t* ptr_pg_mapping = (struct ftl_page_mapping_context_t *)ptr_ftl_context->ptr_mapping;
+	struct chunk_table_t *ptr_chunk_table = ((struct ftl_page_mapping_context_t*)ptr_pg_mapping)->ptr_chunk_table;
 	uint32_t ppa = ftl_convert_to_physical_page_address (bus, chip, block, page);
 	uint32_t i;
 	printf("-S----%s|| ppa: %u , bus: %u, chip %u, block %u, page %u\n", __func__,ppa, bus, chip, block, page);
@@ -424,14 +433,20 @@ int32_t page_mapping_map_logical_to_physical (
 				goto err;
 			}
 		}
-
 		// 청크 테이블 등록
 		for(i=0; i< 1; i++){
+		printf("-S31----%s||%d \n", __func__, _current_block->no_block);
 			ptr_chunk_table[block * 64 + page].valid_count = WRITE_BUFFER_LEN;
+		printf("-S32----%s||%d \n", __func__, _current_block->no_block);
+		if(_current_block->no_block == 4)
+			printf("stop\n");
 			ptr_chunk_table[block * 64 + page].physical_page_len = nr_pages;
+		printf("-S33----%s||%d \n", __func__, _current_block->no_block);
 			ptr_chunk_table[block * 64 + page].is_compressed = 1;
 			printf("compressed page: %d, valid_count: %d, physical_page_len:%d, is_compressed %d\n", ppa+i,ptr_chunk_table[block * 64 + page].valid_count, ptr_chunk_table[block * 64 + page].physical_page_len, ptr_chunk_table[block * 64 + i].is_compressed);
+		printf("-S3----%s||%d \n", __func__, _current_block->no_block);
 		}
+		printf("-S3----%s||%d \n", __func__, _current_block->no_block);
 	} else {
 		clear_prev_ppa(ptr_ftl_context, *logical_page_address, bus, chip, block, page);
 		if(mapping_logical_to_physical(ptr_ftl_context, *logical_page_address, bus, chip, block, page) == -1){
@@ -443,7 +458,7 @@ int32_t page_mapping_map_logical_to_physical (
 		printf("no compressed page: %d, valid_count: %d, physical_page_len:%d, is_compressed %d\n", ppa,ptr_chunk_table[block * 64 + page].valid_count, ptr_chunk_table[block * 64 + page].physical_page_len, ptr_chunk_table[block * 64 + page].is_compressed);
 	}
 
-	printf("-E----%s||%d \n", __func__,0);
+	printf("-E----%s||%d \n", __func__, _current_block->no_block);
 	return 0;
 
 err:

@@ -30,7 +30,7 @@ uint32_t get_block_invalid_pages(struct ftl_context_t *ptr_ftl_context, uint32_t
 	while(page < ptr_ftl_context->ptr_ssd->nr_pages_per_block){
 		ppa = ftl_convert_to_physical_page_address(0, 0, block_no, page);
 		invalid_count += WRITE_BUFFER_LEN - ptr_chunk_table[ppa / 32].valid_count;
-		page += ptr_chunk_table[ppa / 32].physical_page_len;
+		page += ptr_chunk_table[block_no * 64 + page].physical_page_len;
 	}
 
 	return invalid_count;

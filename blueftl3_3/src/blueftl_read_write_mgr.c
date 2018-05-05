@@ -29,7 +29,7 @@ struct wr_buff_t _struct_write_buff;
 
 uint8_t *_write_buff;
 uint8_t *_compressed_buff;
-uint32_t _nr_buff_pages;
+uint32_t _nr_buff_pages = 0;
 
 
 void serialize();
@@ -162,10 +162,18 @@ uint32_t blueftl_page_write(
 	   (3) write 대상 데이터를 버퍼에 복사
 	   */
 	// case of update need to be taken into consideration
-	_nr_buff_pages++; // (1)
+	for(i = 0; i < _nr_buff_pages; i++) {
+		if(_struct_write_buff.arr_lpa[i] == lpa_curr) { //doing in-place update
+			memcpy(_struct_write_buff.buff + i * _ptr_vdevice->page_main_size, ptr_lba_buff, _ptr_vdevice->page_main_size);	
+			printf("found in-place update in wb, at %d, with lpa:%u\n", i, lpa_curr);
+			return 0;
+		}
+
+	}
+	_nr_buff_pages++; // there is no in-place update
 	_struct_write_buff.arr_lpa[_nr_buff_pages-1] = lpa_curr; // (3)
 	memcpy(&_struct_write_buff.buff[_nr_buff_pages-1], ptr_lba_buff, FLASH_PAGE_SIZE); // (5)
-
+	
 	/* buff가 꽉찼으므로 compression 후 write */
 	if(_nr_buff_pages == WRITE_BUFFER_LEN){
 		printf("going to compress\n");
@@ -208,7 +216,7 @@ buffer에서 꺼내 압축 하여 physical write를 하기 전에 read요청이 
 				if(get_free_pages(ftl_base, ptr_ftl_context, 1, &bus, &chip, &block, &page)==-1){
 					goto err;
 				}
-
+				printf(" with i = %d, get free page at bus:%i, chip:%u,block:%u,page:%u\n", bus, chip,block, page);
 				/* 3. physical write */
 				blueftl_user_vdevice_page_write(
 						_ptr_vdevice,
@@ -242,6 +250,7 @@ buffer에서 꺼내 압축 하여 physical write를 하기 전에 read요청이 
 				if(get_free_pages(ftl_base, ptr_ftl_context, 1, &bus, &chip, &block, &page) == -1) {
 					goto err;
 				}
+				printf(" compressed with i = %d, get free page at bus:%u, chip:%u,block:%u,page:%u\n",i, bus, chip,block, page);
 				ptr_compress_page = _compressed_buff + i * FLASH_PAGE_SIZE;
 				blueftl_user_vdevice_page_write(
 						_ptr_vdevice,
@@ -268,6 +277,7 @@ buffer에서 꺼내 압축 하여 physical write를 하기 전에 read요청이 
 	return 0;
 
 err:
+	printf("%s return with err\n", __func__);
 	return -1;
 }
 
@@ -286,6 +296,7 @@ int32_t get_free_pages(struct ftl_base_t* _ftl_base,
 		if (_ftl_base->ftl_trigger_gc != NULL) {
 
 			/* GC */
+			printf("start GC\n");
 			if(_ftl_base->ftl_trigger_gc(ptr_ftl_context, *ptr_bus, *ptr_chip) == -1) {
 				printf("bluessd: oops! garbage collection failed.\n");
 				goto err;

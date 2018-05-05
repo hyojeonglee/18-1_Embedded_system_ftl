@@ -136,6 +136,7 @@ int32_t blueftl_user_ftl_main (
 				uint8_t* ptr_lba_buff = ptr_buffer + ((lpa_curr - lpa_begin) * _ptr_vdevice->page_main_size);
 				
 				if((ret=blueftl_page_write(&_ftl_base, _ptr_ftl_context, lpa_curr, ptr_lba_buff)) == -1){
+					printf("%s failed at lpa_curr %u\n", __func__,lpa_curr);
 					goto failed;
 				}
 			}
