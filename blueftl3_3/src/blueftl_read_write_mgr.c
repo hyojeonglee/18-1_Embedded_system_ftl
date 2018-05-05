@@ -59,6 +59,7 @@ void clean_buff(){
 	memset(_struct_write_buff.buff, 0xFF, 4 * FLASH_PAGE_SIZE);
 }
 
+//added by charlie
 int32_t is_page_in_wb(struct wr_buff_t *wb, uint32_t lpa)
 {
 	int i = 0;
@@ -69,6 +70,7 @@ int32_t is_page_in_wb(struct wr_buff_t *wb, uint32_t lpa)
 	}
 	return -1;
 }
+//ended by charlie
 
 uint32_t blueftl_read_write_mgr_init(){   
 	clean_buff();
@@ -83,6 +85,7 @@ void blueftl_read_write_mgr_close(){
 	free(_compressed_buff);
 }
 
+//added by charlie
 void blueftl_page_read(
 		struct ftl_base_t *ftl_base, 
 		struct ftl_context_t *ptr_ftl_context, 
@@ -143,7 +146,8 @@ void blueftl_page_read(
 		/* simply ignore */
 	}
 }
-
+//ended by charlie
+//
 uint32_t blueftl_page_write(
 		struct ftl_base_t *ftl_base, 
 		struct ftl_context_t *ptr_ftl_context, 
