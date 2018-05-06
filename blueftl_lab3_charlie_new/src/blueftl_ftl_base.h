@@ -24,7 +24,7 @@ struct chunk_table_t {
 };
 
 struct ftl_context_t {
-	struct chunk_table_t chk_table[1024*64];
+
 	
 	/* all about SSD */
 	struct flash_ssd_t* ptr_ssd;
@@ -44,6 +44,7 @@ struct ftl_context_t {
 	/*add by charlie*/
 	int32_t max_erase_cnt;
 	int32_t min_erase_cnt;
+	struct chunk_table_t chk_table[1024*64];
 
 };
 

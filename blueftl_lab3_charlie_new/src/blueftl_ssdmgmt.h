@@ -75,8 +75,6 @@ struct flash_bus_t {
 
 struct flash_ssd_t {
 	/* for write buffer */
-//	struct write_buffer_t* write_buf;
-	
 	/* ssd information */
 	uint32_t nr_buses;
 	uint32_t nr_chips_per_bus;

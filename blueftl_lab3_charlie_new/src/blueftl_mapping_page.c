@@ -199,7 +199,7 @@ int32_t page_mapping_get_mapped_physical_page_address (
 			ret = 0;
 		}
 	}
-	printf("E-----%s, ret %d\n",__func__,ret);
+//	printf("E-----%s, ret %d\n",__func__,ret);
 	return ret;
 }
 
@@ -283,14 +283,12 @@ int32_t page_mapping_get_free_physical_page_address (
 		uint32_t loop_page = 0;
 
 		if (physical_page_address == PAGE_TABLE_FREE) {
-			printf("case new alloc \n");
 			if(ptr_ftl_context->latest_block == 0) {
 			printf("ptr_ftl_context->lateest_block %d, its nr_free_page is %u\n", ptr_ftl_context->latest_block, ptr_ssd->list_buses[ptr_ftl_context->latest_bus].list_chips[ptr_ftl_context->latest_chip].list_blocks[ptr_ftl_context->latest_block].nr_free_pages);
 			}
 			if(ptr_ftl_context->latest_block == -1 || ptr_ssd->list_buses[ptr_ftl_context->latest_bus].list_chips[ptr_ftl_context->latest_chip].list_blocks[ptr_ftl_context->latest_block].nr_free_pages == 0){
-				printf("case 1\n");	
 				ptr_erase_block = ssdmgmt_get_free_block (ptr_ssd, 0, 0);
-				printf("get new block. its free page is %u\n", ptr_erase_block->nr_free_pages); 
+		//		printf("get new block. its free page is %u\n", ptr_erase_block->nr_free_pages); 
 				int nr_all_used_block = 0;
 				int is_all_used;
 				int found_free_page = 0;
@@ -340,7 +338,6 @@ int32_t page_mapping_get_free_physical_page_address (
 				ptr_ftl_context->latest_block = *ptr_block;
 				
 			}else {
-				printf("case 2\n");
 				ptr_erase_block = &ptr_ssd->list_buses[ptr_ftl_context->latest_bus].list_chips[ptr_ftl_context->latest_chip].list_blocks[ptr_ftl_context->latest_block];
 				for (loop_page = 0; loop_page < ptr_ssd->nr_pages_per_block; loop_page++) {
 					if (ptr_erase_block->list_pages[loop_page].page_status == PAGE_STATUS_FREE) {

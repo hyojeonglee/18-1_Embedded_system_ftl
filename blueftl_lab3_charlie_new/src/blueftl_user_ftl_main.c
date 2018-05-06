@@ -197,17 +197,17 @@ int32_t blueftl_user_ftl_main (
 					_ftl_base.ftl_get_mapped_physical_page_address (
 						_ptr_ftl_context, wb->t_lpa[i], &bus, &chip, &block, &page);
 	
-					int num_pages_prev = _ptr_ftl_context->chk_table[block*64 + page +i].physical_page_cnt;
-					int num_valid_prev = _ptr_ftl_context->chk_table[block*64 + page + i].valid_page_cnt;
+					int num_pages_prev = _ptr_ftl_context->chk_table[block*64 + page].physical_page_cnt;
+					int num_valid_prev = _ptr_ftl_context->chk_table[block*64 + page].valid_page_cnt;
 					int j;
 							
-					for(j=0; j < num_pages_prev; j++){
-						_ptr_ftl_context->chk_table[block*64 + page+ j].valid_page_cnt--;
-					}
+				//	for(j=0; j < num_pages_prev; j++){
+						_ptr_ftl_context->chk_table[block*64 + page].valid_page_cnt--;
+				//	}
 					//free the chunk and the page
 					if(_ptr_ftl_context->chk_table[block*64 + page].valid_page_cnt == 0){
 						//printf("no more valid, %d\n", num_pages_prev);
-						for(j=0; j < num_pages_prev; j++){
+				//		for(j=0; j < num_pages_prev; j++){
 							_ftl_base.ftl_get_mapped_physical_page_address (
 									_ptr_ftl_context, wb->t_lpa[i], &bus, &chip, &block, &page);
 						
@@ -215,12 +215,12 @@ int32_t blueftl_user_ftl_main (
 	
 							struct flash_block_t* ptr_temp_block;
 							ptr_temp_block = &_ptr_ftl_context->ptr_ssd->list_buses[bus].list_chips[chip].list_blocks[block];
-							ptr_temp_block->list_pages[page+j].page_status = PAGE_STATUS_INVALID;
+							ptr_temp_block->list_pages[page].page_status = PAGE_STATUS_INVALID;
 							ptr_temp_block->nr_valid_pages--;
 							ptr_temp_block->nr_invalid_pages++;
-							_ptr_ftl_context->chk_table[block*64 + page+ j].valid_page_cnt = 0;
-							_ptr_ftl_context->chk_table[block*64 + page+ j].physical_page_cnt = 0;
-						}
+							_ptr_ftl_context->chk_table[block*64 + page].valid_page_cnt = 0;
+							_ptr_ftl_context->chk_table[block*64 + page].physical_page_cnt = 0;
+				//		}
 					}
 					ptr_pg_mapping->ptr_pg_table[wb->t_lpa[i]] = -1;
 				}
