@@ -49,7 +49,6 @@ int32_t blueftl_user_ftl_create (struct ssd_params_t* ptr_ssd_params)
         blueftl_user_vdevice_close (_ptr_vdevice);
         return -1;
     }
-
     return 0;
 }
 
@@ -74,7 +73,7 @@ int32_t blueftl_user_ftl_main (
     uint32_t lpa_curr;
     int32_t ret;
 
-    struct write_buffer_t* wb = _ptr_ftl_context->ptr_ssd->write_buf;
+    struct write_buffer_t* wb = _ptr_ftl_context->write_buf;
 
 
     if (_ptr_vdevice == NULL || _ptr_vdevice->blueftl_char_h == -1) {
@@ -192,23 +191,23 @@ int32_t blueftl_user_ftl_main (
 			struct ftl_page_mapping_context_t* ptr_pg_mapping = _ptr_ftl_context->ptr_mapping;
 
 			for(i = 0; i < wb->wb_page_cnt; i++){
-				if(ptr_pg_mapping->ptr_pg_table[wb->t_lpa[i]] != -1){
+				if(ptr_pg_mapping->ptr_pg_table[wb->t_lpa[i]] != PAGE_TABLE_FREE){
 				
 					//reduce valid counter for the chunk
 					_ftl_base.ftl_get_mapped_physical_page_address (
 						_ptr_ftl_context, wb->t_lpa[i], &bus, &chip, &block, &page);
 	
-					int num_pages_prev = _ptr_ftl_context->chk_table[block*64 + page +i].physical_page_cnt;
-					int num_valid_prev = _ptr_ftl_context->chk_table[block*64 + page + i].valid_page_cnt;
+					int num_pages_prev = _ptr_ftl_context->chk_table[block*64 + page].physical_page_cnt;
+					int num_valid_prev = _ptr_ftl_context->chk_table[block*64 + page].valid_page_cnt;
 					int j;
 							
-					for(j=0; j < num_pages_prev; j++){
-						_ptr_ftl_context->chk_table[block*64 + page+ j].valid_page_cnt--;
-					}
+				//	for(j=0; j < num_pages_prev; j++){
+						_ptr_ftl_context->chk_table[block*64 + page].valid_page_cnt--;
+				//	}
 					//free the chunk and the page
 					if(_ptr_ftl_context->chk_table[block*64 + page].valid_page_cnt == 0){
 						//printf("no more valid, %d\n", num_pages_prev);
-						for(j=0; j < num_pages_prev; j++){
+				//		for(j=0; j < num_pages_prev; j++){
 							_ftl_base.ftl_get_mapped_physical_page_address (
 									_ptr_ftl_context, wb->t_lpa[i], &bus, &chip, &block, &page);
 						
@@ -216,12 +215,12 @@ int32_t blueftl_user_ftl_main (
 	
 							struct flash_block_t* ptr_temp_block;
 							ptr_temp_block = &_ptr_ftl_context->ptr_ssd->list_buses[bus].list_chips[chip].list_blocks[block];
-							ptr_temp_block->list_pages[page+j].page_status = PAGE_STATUS_INVALID;
+							ptr_temp_block->list_pages[page].page_status = PAGE_STATUS_INVALID;
 							ptr_temp_block->nr_valid_pages--;
 							ptr_temp_block->nr_invalid_pages++;
-							_ptr_ftl_context->chk_table[block*64 + page+ j].valid_page_cnt = 0;
-							_ptr_ftl_context->chk_table[block*64 + page+ j].physical_page_cnt = 0;
-						}
+							_ptr_ftl_context->chk_table[block*64 + page].valid_page_cnt = 0;
+							_ptr_ftl_context->chk_table[block*64 + page].physical_page_cnt = 0;
+				//		}
 					}
 					ptr_pg_mapping->ptr_pg_table[wb->t_lpa[i]] = -1;
 				}
@@ -310,17 +309,20 @@ int32_t blueftl_user_ftl_main (
                             //printf("[rocky][%s::%d] write to nand %u, %u, %u, %u\n", __FUNCTION__, __LINE__, bus, chip, block, page);
 
                             /* write to nand */
+							printf("write to nand %u, %u, %u, %u\n", bus, chip, block, page);
                             blueftl_user_vdevice_page_write(
                                     _ptr_vdevice, 
                                     bus, chip, block, page,
                                     _ptr_vdevice->page_main_size, 
                                     (char*)ptr_comp_buff);
+							printf("write to nand finished \n");
 			    /* make page valid */
 			    struct flash_block_t* ptr_temp_block;
 			    ptr_temp_block = &_ptr_ftl_context->ptr_ssd->list_buses[bus].list_chips[chip].list_blocks[block];
 			    ptr_temp_block->list_pages[page].page_status = PAGE_STATUS_VALID;
 			    ptr_temp_block->nr_free_pages--;
 			    ptr_temp_block->nr_valid_pages++;
+				printf("ptr_temp_block nr_page_free %u\n",ptr_temp_block->nr_free_pages);
                             /* mapping */
                             if(i == 0){ // wb 의 첫 번쨰 page mapping
                                 wb_bus = bus;

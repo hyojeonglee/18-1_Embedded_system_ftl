@@ -9,7 +9,6 @@
 #define PAGE_STATUS_INVALID		2
 #define PAGE_STATUS_VALID		3
 #define CHUNK_SIZE				4
-#define CHUNK_TABLE_SIZE		4
 
 struct flash_page_t {
 	uint32_t no_logical_page_addr;
@@ -71,10 +70,7 @@ struct flash_bus_t {
 	struct flash_chip_t* list_chips;
 };
 
-
-
 struct flash_ssd_t {
-	/* for write buffer */
 	/* ssd information */
 	uint32_t nr_buses;
 	uint32_t nr_chips_per_bus;

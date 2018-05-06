@@ -16,7 +16,6 @@
 #define WL_POLICY_NONE				1
 #define WL_DUAL_POOL				2
 
-
 struct chunk_table_t {
 	uint32_t valid_page_cnt;
 	uint32_t physical_page_cnt;
@@ -24,8 +23,6 @@ struct chunk_table_t {
 };
 
 struct ftl_context_t {
-
-	
 	/* all about SSD */
 	struct flash_ssd_t* ptr_ssd;
 
@@ -44,8 +41,9 @@ struct ftl_context_t {
 	/*add by charlie*/
 	int32_t max_erase_cnt;
 	int32_t min_erase_cnt;
-	struct chunk_table_t chk_table[1024*64];
 
+	/* for chunk table */
+	struct chunk_table_t chk_table[1024*64];
 };
 
 struct ftl_base_t {

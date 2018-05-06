@@ -68,24 +68,17 @@ struct ftl_context_t* page_mapping_create_ftl_context (
 
 	/* set virtual device */
 	ptr_ftl_context->ptr_vdevice = ptr_vdevice;
-
 	
-	// initialize latest info
+	/* initialize latest info */
 	ptr_ftl_context->latest_chip = -1;
 	ptr_ftl_context->latest_bus = -1;
 	ptr_ftl_context->latest_block = -1;
-
 
 	ptr_ssd = ptr_ftl_context->ptr_ssd;
 	ptr_pg_mapping = (struct ftl_page_mapping_context_t *)ptr_ftl_context->ptr_mapping;
 	printf("%u, %u, %u, %u\n", ptr_ssd->nr_buses, ptr_ssd->nr_chips_per_bus, ptr_ssd->nr_blocks_per_chip, ptr_ssd->nr_pages_per_block);
 
-	/* TODO: implement block-level > page-level FTL */
-
-	/* TODO is this right? */
-	ptr_pg_mapping->nr_pg_table_entries = 
-		ptr_ssd->nr_buses * ptr_ssd->nr_chips_per_bus * ptr_ssd->nr_blocks_per_chip * ptr_ssd->nr_pages_per_block; // TODO modify ? */
-	printf("ptr_pg_mapping->nr_entries %d\n", ptr_pg_mapping->nr_pg_table_entries);
+	ptr_pg_mapping->nr_pg_table_entries = ptr_ssd->nr_buses * ptr_ssd->nr_chips_per_bus * ptr_ssd->nr_blocks_per_chip * ptr_ssd->nr_pages_per_block;
 
 	/*if ((ptr_blk_mapping->ptr_blk_table = (uint32_t*)kmalloc (ptr_blk_mapping->nr_blk_table_entries * sizeof (uint32_t), GFP_ATOMIC)) == NULL) {*/
 	if ((ptr_pg_mapping->ptr_pg_table = (int32_t*)malloc (ptr_pg_mapping->nr_pg_table_entries * sizeof (int32_t))) == NULL) {
@@ -98,22 +91,18 @@ struct ftl_context_t* page_mapping_create_ftl_context (
 		ptr_pg_mapping->ptr_pg_table[init_pg_loop] = PAGE_TABLE_FREE;
 	}
 
-	/* TODO: end */
-
 	if ((ptr_ftl_context->write_buf = (struct write_buffer_t*)malloc(sizeof(struct write_buffer_t))) == NULL) {
 		printf("blueftl_mapping_page: failed to allocate the memory for write buffer\n");
-		return -1;
+		goto error_alloc_mapping_table;
 	}
 
-	if ((ptr_ftl_context->write_buf->ptr_wb_buff = (uint8_t *)malloc(_ptr_vdevice->page_main_size * CHUNK_TABLE_SIZE)) == NULL) {
+	if ((ptr_ftl_context->write_buf->ptr_wb_buff = (uint8_t *)malloc(_ptr_vdevice->page_main_size * CHUNK_SIZE)) == NULL) {
 		printf("blueftl_mapping_page: failed to allocate the memory for write buffer\n");
-		return -1;
+		goto error_alloc_mapping_table;
 	}
-
-	memset(ptr_ftl_context->write_buf->ptr_wb_buff, 0xFF, CHUNK_TABLE_SIZE * ptr_vdevice->page_main_size);
+	memset(ptr_ftl_context->write_buf->ptr_wb_buff, 0xFF, CHUNK_SIZE * ptr_vdevice->page_main_size);
 
 	return ptr_ftl_context;
-
 
 error_alloc_mapping_table:
 	/*kfree (ptr_ftl_context->ptr_mapping);*/
@@ -139,12 +128,10 @@ void page_mapping_destroy_ftl_context (struct ftl_context_t* ptr_ftl_context)
 	free(ptr_ftl_context->write_buf->ptr_wb_buff);
 	free(ptr_ftl_context->write_buf);
 
-	/* TODO: implement block-level > page-level FTL */
 	if (ptr_pg_mapping->ptr_pg_table != NULL) {
 		/*kfree (ptr_blk_mapping->ptr_blk_table);*/
 		free (ptr_pg_mapping->ptr_pg_table);
 	}
-	/* TODO: end */
 
 	/* destroy the block mapping context */
 	if (ptr_pg_mapping != NULL)
@@ -199,7 +186,7 @@ int32_t page_mapping_get_mapped_physical_page_address (
 			ret = 0;
 		}
 	}
-//	printf("E-----%s, ret %d\n",__func__,ret);
+	
 	return ret;
 }
 
@@ -227,11 +214,7 @@ int32_t page_mapping_get_free_physical_page_address (
 	if (physical_page_address != PAGE_TABLE_FREE) {
 		printf("case update");
 		/* already mapped, so find another physical page that not in used */
-		
 		ftl_convert_to_ssd_layout (physical_page_address, ptr_bus, ptr_chip, ptr_block, ptr_page);	
-		
-		// for test
-		// printf("[get free: 220] logic %d was already mapped with bus %d chip %d block %d page %d\n", logical_page_address, *ptr_bus, *ptr_chip, *ptr_block, *ptr_page);
 		
 		/* Change curr physical page status to INVALID */
 		ptr_erase_block = &ptr_ssd->list_buses[*ptr_bus].list_chips[*ptr_chip].list_blocks[*ptr_block];
@@ -288,7 +271,6 @@ int32_t page_mapping_get_free_physical_page_address (
 			}
 			if(ptr_ftl_context->latest_block == -1 || ptr_ssd->list_buses[ptr_ftl_context->latest_bus].list_chips[ptr_ftl_context->latest_chip].list_blocks[ptr_ftl_context->latest_block].nr_free_pages == 0){
 				ptr_erase_block = ssdmgmt_get_free_block (ptr_ssd, 0, 0);
-		//		printf("get new block. its free page is %u\n", ptr_erase_block->nr_free_pages); 
 				int nr_all_used_block = 0;
 				int is_all_used;
 				int found_free_page = 0;
@@ -392,9 +374,6 @@ int32_t page_mapping_map_logical_to_physical_c (
 		physical_page_address = ftl_convert_to_physical_page_address (t_bus, t_chip, t_block, t_page);
 
 	ptr_pg_mapping->ptr_pg_table[logical_page_address] = physical_page_address;
-/*add by charlie these have been done in main function*/
-//	ptr_erase_block->nr_valid_pages++;
-//	ptr_erase_block->nr_free_pages--;
 
 	return 0;
 }
