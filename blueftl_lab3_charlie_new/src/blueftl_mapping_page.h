@@ -1,7 +1,7 @@
 #ifndef _BLUESSD_FTL_PAGE
 #define _BLUESSD_FTL_PAGE
 
-#define PAGE_TABLE_FREE	0
+#define PAGE_TABLE_FREE	-1
 
 
 extern struct ftl_base_t ftl_base_page_mapping;
@@ -9,7 +9,7 @@ extern struct ftl_base_t ftl_base_page_mapping;
 struct ftl_page_mapping_context_t {
 	uint32_t nr_pg_table_entries;	/* the number of pages that belong to the page mapping table */
 	/* TODO needs nr_blk_table_entries? */
-	uint32_t* ptr_pg_table; /* for the page mapping */
+	int32_t* ptr_pg_table; /* for the page mapping */
 };
 
 struct write_buffer_t {
