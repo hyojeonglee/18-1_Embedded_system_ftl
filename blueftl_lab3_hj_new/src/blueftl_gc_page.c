@@ -115,7 +115,7 @@ int32_t gc_page_trigger_gc_lab (
 
 
 	/* for wear leveling */
-#if 1
+#if 0
 	check_max_min_nr_erase_cnt(ptr_ftl_context);
 	if (check_cold_data_migration(ptr_ftl_context) == TRUE)
 		cold_data_migration(ptr_ftl_context);

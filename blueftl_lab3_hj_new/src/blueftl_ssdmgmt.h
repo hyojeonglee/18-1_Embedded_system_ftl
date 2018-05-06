@@ -77,7 +77,7 @@ struct write_buffer_t {
 	uint32_t t_bus[CHUNK_TABLE_SIZE];
 	uint32_t t_chip[CHUNK_TABLE_SIZE];
 	uint32_t t_block[CHUNK_TABLE_SIZE];
-	uint32_t t_pagep[CHUNK_TABLE_SIZE];
+	uint32_t t_page[CHUNK_TABLE_SIZE];
 	uint32_t t_lpa[CHUNK_TABLE_SIZE];
 };
 

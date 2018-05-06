@@ -104,6 +104,12 @@ struct ftl_context_t* page_mapping_create_ftl_context (
 	}
 	memset(ptr_ssd->write_buf->ptr_wb_buff, 0xFF, CHUNK_TABLE_SIZE * ptr_vdevice->page_main_size);
 
+	if ((ptr_ssd->write_buf->ptr_wb_buff = (uint8_t*)malloc(ptr_vdevice->page_main_size * CHUNK_SIZE)) == NULL) {
+		printf("wb buff alloc failed!\n");
+		return -1;
+	}
+	memset(ptr_ssd->write_buf->ptr_wb_buff, 0xFF, CHUNK_SIZE * ptr_vdevice->page_main_size);
+
 	return ptr_ftl_context;
 
 
