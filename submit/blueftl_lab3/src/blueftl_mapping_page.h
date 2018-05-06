@@ -3,7 +3,6 @@
 
 #define PAGE_TABLE_FREE	-1
 
-
 extern struct ftl_base_t ftl_base_page_mapping;
 
 struct ftl_page_mapping_context_t {
@@ -11,14 +10,15 @@ struct ftl_page_mapping_context_t {
 	int32_t* ptr_pg_table; /* for the page mapping */
 };
 
+struct c_header {
+	uint32_t offset[CHUNK_SIZE];
+	uint32_t lpa[CHUNK_SIZE];
+};
+
 struct write_buffer_t {
-	int wb_page_cnt;
-	uint8_t* ptr_wb_buff;
-	uint32_t t_bus[CHUNK_SIZE];
-	uint32_t t_chip[CHUNK_SIZE];
-	uint32_t t_block[CHUNK_SIZE];
-	uint32_t t_pagep[CHUNK_SIZE];
+	int page_cnt;
 	uint32_t t_lpa[CHUNK_SIZE];
+	uint8_t* t_buf;
 };
 
 /* create the page mapping table */
@@ -54,6 +54,7 @@ int32_t page_mapping_map_logical_to_physical (
 	uint32_t block,
 	uint32_t page);
 
+/* for lab 3 */
 int32_t page_mapping_map_logical_to_physical_c (
 	struct ftl_context_t* ptr_ftl_context,
 	uint32_t logical_page_address,

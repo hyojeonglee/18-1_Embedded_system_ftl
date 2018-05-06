@@ -32,8 +32,6 @@ struct ftl_context_t {
 	/* virtual device */
 	struct virtual_device_t* ptr_vdevice;
 
-	/* for write buffer */
-	struct write_buffer_t* write_buf;
 
 	int32_t latest_bus;
 	int32_t latest_chip;
@@ -42,6 +40,9 @@ struct ftl_context_t {
 	int32_t max_erase_cnt;
 	int32_t min_erase_cnt;
 
+
+	/* for write buffer */
+	struct write_buffer_t* write_buf;
 	/* for chunk table */
 	struct chunk_table_t chk_table[1024*64];
 };
